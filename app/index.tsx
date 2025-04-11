@@ -1,10 +1,10 @@
-import { Image, StyleSheet, Platform } from "react-native";
+import { Image, StyleSheet, Platform, Pressable } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 export default function HomeScreen() {
   return (
@@ -19,6 +19,9 @@ export default function HomeScreen() {
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome! afaf</ThemedText>
+        <Link href={"/routes" as any}>
+          <ThemedText type="defaultSemiBold">Go To routes</ThemedText>
+        </Link>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
