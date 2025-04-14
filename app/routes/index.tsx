@@ -8,6 +8,8 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import polyline from "@mapbox/polyline";
 import { GoogleAPI } from "@/api/google";
 import { Polyline } from "react-native-maps";
+import { getCurrentLocation } from "@/utils/location";
+import { showErrorToast, showSuccessToast } from "@/utils/toast";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -19,7 +21,6 @@ export default function HomeScreen() {
       longitude: number;
     }[]
   >([]);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   async function getRouteDetails(address: string) {
@@ -43,54 +44,34 @@ export default function HomeScreen() {
           // console.log("Route coordinates:", coordinates);
         }
       } catch (error) {
-        console.error("Error fetching route details:", error);
       }
     } else {
-      console.error("Location coordinates are not available");
     }
   }
 
   useEffect(() => {
-    async function getCurrentLocation() {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      const { coords } = location;
-
-      if (coords) {
-        const { latitude, longitude } = coords;
-        console.log("Latitude:", latitude, "Longitude:", longitude);
-
-        let response = Location.reverseGeocodeAsync({
-          latitude,
-          longitude,
-        });
-        response.then((data) => {
-          console.log("Location data:", data);
-        });
-      } else {
-        setErrorMsg("Unable to retrieve location coordinates");
-      }
-      setLocation(location);
-    }
-
-    getCurrentLocation();
+    getCurrentLocation()
+      .then((location) => {
+        if (location) {
+          setLocation(location);
+        } else {
+          showErrorToast(
+            "Location not found. Please enable location services."
+          );
+        }
+      })
+      .catch((error) => {
+        showErrorToast("Failed to get current location");
+      });
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      Google Places Autocomplete
       <GooglePlacesAutocomplete
         placeholder="Search"
         fetchDetails={true}
         onPress={(data, details = null) => {
           // console.log(data, details);
-          // console.log(JSON.stringify(details?.geometry?.location));
           getRouteDetails(data.description);
         }}
         query={{
@@ -105,13 +86,14 @@ export default function HomeScreen() {
       {location?.coords && (
         <MapView
           style={styles.map}
-          initialRegion={{
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
             latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
           }}
           showsUserLocation={true}
+          showsMyLocationButton={true}
+          zoomEnabled={true}
+          zoomControlEnabled={true}
         >
           {routePointCoordinates.length > 0 && (
             <Polyline
@@ -121,10 +103,8 @@ export default function HomeScreen() {
                 "#7F0000",
                 "#000000",
                 "#000000",
-                "#000000",
-                "#7F0000",
-              ]}
-              strokeWidth={6}
+              strokeColor="#FF5733" // vibrant stroke color
+              strokeWidth={8} // thicker line for better visibility
             />
           )}
         </MapView>
