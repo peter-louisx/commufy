@@ -8,3 +8,5 @@ const axios = Axios.create({
       "Accept": "application/json",
     },
   });
+
+  export default axios;

@@ -5,13 +5,50 @@ import { View } from "react-native";
 import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import polyline from "@mapbox/polyline";
+import { GoogleAPI } from "@/api/google";
+import { Polyline } from "react-native-maps";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [routePointCoordinates, setRoutePointCoordinates] = useState<
+    {
+      latitude: number;
+      longitude: number;
+    }[]
+  >([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  async function getRouteDetails(address: string) {
+    if (location?.coords) {
+      const { latitude, longitude } = location.coords;
+      try {
+        const response = await GoogleAPI.getTargetRouteDetails(
+          address,
+          latitude,
+          longitude
+        );
+
+        const { routes } = response.data;
+        if (routes.length > 0) {
+          const points = polyline.decode(routes[0].polyline.encodedPolyline);
+          const coordinates = points.map((point) => ({
+            latitude: point[0],
+            longitude: point[1],
+          }));
+          setRoutePointCoordinates(coordinates);
+          // console.log("Route coordinates:", coordinates);
+        }
+      } catch (error) {
+        console.error("Error fetching route details:", error);
+      }
+    } else {
+      console.error("Location coordinates are not available");
+    }
+  }
 
   useEffect(() => {
     async function getCurrentLocation() {
@@ -53,7 +90,8 @@ export default function HomeScreen() {
         fetchDetails={true}
         onPress={(data, details = null) => {
           // console.log(data, details);
-          console.log(JSON.stringify(details?.geometry?.location));
+          // console.log(JSON.stringify(details?.geometry?.location));
+          getRouteDetails(data.description);
         }}
         query={{
           key: "",
@@ -74,7 +112,22 @@ export default function HomeScreen() {
             longitudeDelta: 0.0421,
           }}
           showsUserLocation={true}
-        />
+        >
+          {routePointCoordinates.length > 0 && (
+            <Polyline
+              coordinates={routePointCoordinates}
+              strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
+              strokeColors={[
+                "#7F0000",
+                "#000000",
+                "#000000",
+                "#000000",
+                "#7F0000",
+              ]}
+              strokeWidth={6}
+            />
+          )}
+        </MapView>
       )}
       {/* Button to show modal */}
       <TouchableOpacity
