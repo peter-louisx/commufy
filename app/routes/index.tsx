@@ -41,7 +41,6 @@ export default function HomeScreen() {
             longitude: point[1],
           }));
           setRoutePointCoordinates(coordinates);
-          // console.log("Route coordinates:", coordinates);
         }
       } catch (error) {
       }
@@ -71,7 +70,6 @@ export default function HomeScreen() {
         placeholder="Search"
         fetchDetails={true}
         onPress={(data, details = null) => {
-          // console.log(data, details);
           getRouteDetails(data.description);
         }}
         query={{
@@ -86,23 +84,21 @@ export default function HomeScreen() {
       {location?.coords && (
         <MapView
           style={styles.map}
+          region={{
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            latitudeDelta: 0.0922,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005,
           }}
           showsUserLocation={true}
           showsMyLocationButton={true}
           zoomEnabled={true}
           zoomControlEnabled={true}
+          loadingEnabled
         >
           {routePointCoordinates.length > 0 && (
             <Polyline
               coordinates={routePointCoordinates}
-              strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-              strokeColors={[
-                "#7F0000",
-                "#000000",
-                "#000000",
               strokeColor="#FF5733" // vibrant stroke color
               strokeWidth={8} // thicker line for better visibility
             />
@@ -151,7 +147,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     left: 0,
-    right: 0,
+    width: "85%",
     zIndex: 1,
   },
   autocompleteInput: {
