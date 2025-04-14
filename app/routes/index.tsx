@@ -41,10 +41,13 @@ export default function HomeScreen() {
             longitude: point[1],
           }));
           setRoutePointCoordinates(coordinates);
+          showSuccessToast("Route details fetched successfully!");
         }
       } catch (error) {
+        showErrorToast("Failed to fetch route details. Please try again.");
       }
     } else {
+      showErrorToast("Location not found. Please enable location services.");
     }
   }
 
