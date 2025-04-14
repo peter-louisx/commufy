@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Platform, PermissionsAndroid } from "react-native";
-import MapView, { Polyline, Region } from "react-native-maps";
+import { StyleSheet, Modal, Text, TouchableOpacity } from "react-native";
+import MapView from "react-native-maps";
 import { View } from "react-native";
+import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     async function getCurrentLocation() {
       let { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         return;
@@ -40,25 +44,65 @@ export default function HomeScreen() {
 
     getCurrentLocation();
   }, []);
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      Google Places Autocomplete
+      <GooglePlacesAutocomplete
+        placeholder="Search"
+        fetchDetails={true}
+        onPress={(data, details = null) => {
+          // console.log(data, details);
+          console.log(JSON.stringify(details?.geometry?.location));
+        }}
+        query={{
+          key: "",
+          language: "id",
+        }}
+        styles={{
+          container: styles.autocompleteContainer,
+          textInput: styles.autocompleteInput,
+        }}
+      />
       {location?.coords && (
         <MapView
           style={styles.map}
-          initialRegion={
-            location?.coords
-              ? {
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }
-              : undefined
-          }
-          showsUserLocation={true} // Show the user's location on the map
+          initialRegion={{
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          showsUserLocation={true}
         />
       )}
-    </View>
+      {/* Button to show modal */}
+      <TouchableOpacity
+        style={styles.buttonContainer}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.buttonText}>Show Modal</Text>
+      </TouchableOpacity>
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>This is a modal!</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -69,5 +113,66 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: "100%",
+  },
+  autocompleteContainer: {
+    position: "absolute",
+    top: 10,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  autocompleteInput: {
+    backgroundColor: "white",
+    borderRadius: 5,
+    padding: 10,
+    marginHorizontal: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 100,
+    right: 20,
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 5,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  buttonText: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: "#2196F3",
+    padding: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
