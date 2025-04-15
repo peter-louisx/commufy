@@ -12,15 +12,14 @@ export async function getCurrentLocation() {
 
     if (coords) {
         const { latitude, longitude } = coords;
-        console.log("Latitude:", latitude, "Longitude:", longitude);
 
         let response = Location.reverseGeocodeAsync({
             latitude,
             longitude,
         });
-        response.then((data) => {
-            console.log("Location data:", data);
-        });
+        // response.then((data) => {
+        //     console.log("Location data:", data);
+        // });
     } else {
         throw new Error("Unable to retrieve location coordinates");
     }
