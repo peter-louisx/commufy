@@ -211,6 +211,9 @@ export default function HomeScreen() {
             zoomEnabled={true}
             zoomControlEnabled={true}
             loadingEnabled
+            showsPointsOfInterest={false}
+            showsBuildings={false}
+            showsIndoors={false}
           >
             {routeSteps.length > 0 &&
               routeSteps.map((step, index) => (
@@ -222,7 +225,7 @@ export default function HomeScreen() {
                         latitude: point.latitude,
                         longitude: point.longitude,
                       }))}
-                      strokeColor={"#FF0000"}
+                      strokeColor={"#4287f5"}
                       lineDashPattern={[10, 5]}
                       geodesic={true}
                       strokeWidth={8}
@@ -235,7 +238,7 @@ export default function HomeScreen() {
                         latitude: point.latitude,
                         longitude: point.longitude,
                       }))}
-                      strokeColor={"#0000FF"}
+                      strokeColor={"#f54242"}
                       strokeWidth={5}
                     />
                   )}
