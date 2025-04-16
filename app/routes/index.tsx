@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import MapView, { LatLng, Region, Polyline } from "react-native-maps";
+import MapView, { LatLng, Region, Polyline, Marker } from "react-native-maps";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
@@ -77,6 +77,7 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [endLocation, setEndLocation] = useState<LatLng | null>(null);
   const [routeSteps, setRouteSteps] = useState<
     {
       latitude: number;
@@ -120,6 +121,10 @@ export default function HomeScreen() {
     setRouteSteps(steps);
     setMapRegion(getRegionPositionAfterRoute(steps));
     setModalVisible(false);
+    setEndLocation({
+      latitude: route.legs[0].endLocation.latLng.latitude,
+      longitude: route.legs[0].endLocation.latLng.longitude,
+    });
   };
 
   async function getRouteDetails(address: string) {
@@ -236,6 +241,18 @@ export default function HomeScreen() {
                   )}
                 </>
               ))}
+            {
+              // Display the marker for end location
+              endLocation && (
+                <Marker
+                  key="endLocation"
+                  coordinate={{
+                    latitude: endLocation.latitude,
+                    longitude: endLocation.longitude,
+                  }}
+                />
+              )
+            }
           </MapView>
         )}
 
