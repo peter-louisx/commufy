@@ -1,15 +1,77 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Modal, Text, TouchableOpacity } from "react-native";
-import MapView, { LatLng, Region } from "react-native-maps";
+import {
+  StyleSheet,
+  Modal,
+  Text,
+  TouchableOpacity,
+  FlatList,
+} from "react-native";
+import MapView, { LatLng, Region, Polyline } from "react-native-maps";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import polyline from "@mapbox/polyline";
 import { GoogleAPI } from "@/api/google";
-import { Polyline } from "react-native-maps";
 import { getCurrentLocation } from "@/utils/location";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { FontAwesome5 } from "@expo/vector-icons";
+
+type Route = {
+  legs: {
+    polyline: { encodedPolyline: string };
+    travelMode: string;
+    startLocation: {
+      latLng: LatLng;
+    };
+    endLocation: {
+      latLng: LatLng;
+    };
+    stepsOverview: {
+      multiModalSegments: {
+        stepStartIndex: number;
+        stepEndIndex: number;
+        travelMode: string;
+        navigationInstruction: {
+          instructions: string;
+        };
+      }[];
+    };
+    steps: {
+      polyline: { encodedPolyline: string };
+      travelMode: string;
+    }[];
+  }[];
+  distanceMeters: string;
+  staticDuration: string;
+  polyline: { encodedPolyline: string };
+  viewport: {
+    low: {
+      latitude: number;
+      longitude: number;
+    };
+    high: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  travelAdvisory: {
+    transitFare: {
+      units: string;
+    };
+  };
+  localizedValues: {
+    distance: {
+      text: string;
+    };
+    duration: {
+      text: string;
+    };
+    transitFare: {
+      text: string;
+    };
+  };
+};
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -24,6 +86,7 @@ export default function HomeScreen() {
   >([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
+  const [availableRoutes, setAvailableRoutes] = useState<Route[]>([]);
 
   const getRegionPositionAfterRoute = (
     routeSteps: { latitude: number; longitude: number }[][]
@@ -42,6 +105,23 @@ export default function HomeScreen() {
     };
   };
 
+  const setTargetRoute = (route: Route) => {
+    const steps = route.legs[0].steps.map(
+      (step: { polyline: { encodedPolyline: string }; travelMode: string }) => {
+        const points = polyline.decode(step.polyline.encodedPolyline);
+
+        return points.map((point: number[]) => ({
+          latitude: point[0],
+          longitude: point[1],
+          travelMode: step.travelMode,
+        }));
+      }
+    );
+    setRouteSteps(steps);
+    setMapRegion(getRegionPositionAfterRoute(steps));
+    setModalVisible(false);
+  };
+
   async function getRouteDetails(address: string) {
     if (location?.coords) {
       const { latitude, longitude } = location.coords;
@@ -52,27 +132,14 @@ export default function HomeScreen() {
           longitude
         );
 
-        const { routes } = response.data;
-        if (routes.length > 0) {
-          const steps = routes[0].legs[0].steps.map(
-            (step: {
-              polyline: { encodedPolyline: string };
-              travelMode: string;
-            }) => {
-              const points = polyline.decode(step.polyline.encodedPolyline);
+        const {
+          routes,
+        }: {
+          routes: Route[];
+        } = response.data;
 
-              return points.map((point: number[]) => ({
-                latitude: point[0],
-                longitude: point[1],
-                travelMode: step.travelMode,
-              }));
-            }
-          );
-
-          setRouteSteps(steps);
-          setMapRegion(getRegionPositionAfterRoute(steps));
-          showSuccessToast("Route details fetched successfully!");
-        }
+        setAvailableRoutes(routes);
+        setModalVisible(true);
       } catch (error) {
         showErrorToast("Failed to fetch route details. Please try again.");
       }
@@ -190,7 +257,75 @@ export default function HomeScreen() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>This is a modal!</Text>
+            <FlatList
+              data={availableRoutes}
+              keyExtractor={(item, index) => index.toString()}
+              style={{
+                width: "100%",
+                paddingVertical: 10,
+              }}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setTargetRoute(item)}
+                  style={{
+                    borderWidth: 1,
+                    width: "100%",
+                    padding: 10,
+                    borderRadius: 5,
+                    marginVertical: 5,
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                    Durasi: {item.localizedValues.duration.text}
+                  </Text>
+                  {item.travelAdvisory.transitFare.units && (
+                    <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                      Harga: {item.travelAdvisory.transitFare.units}
+                    </Text>
+                  )}
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                    }}
+                  >
+                    {item.legs[0].stepsOverview.multiModalSegments.map(
+                      (segment, index) => (
+                        <View
+                          key={index}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginBottom: 5,
+                          }}
+                        >
+                          <FontAwesome5
+                            name={
+                              segment.travelMode === "WALK" ? "walking" : "bus"
+                            }
+                            size={16}
+                            color="black"
+                            style={{ marginRight: 5 }}
+                          />
+                          {index !=
+                            item.legs[0].stepsOverview.multiModalSegments
+                              .length -
+                              1 && (
+                            <FontAwesome5
+                              name="arrow-right"
+                              size={16}
+                              color="black"
+                              style={{ marginRight: 5 }}
+                            />
+                          )}
+                        </View>
+                      )
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setModalVisible(false)}
@@ -251,7 +386,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 100,
+    bottom: 140,
     right: 20,
     backgroundColor: "white",
     padding: 10,
@@ -273,7 +408,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: 300,
+    width: "100%",
     padding: 20,
     backgroundColor: "white",
     borderRadius: 10,

@@ -14,7 +14,8 @@ export const GoogleAPI = {
                 "destination": {
                   "address": address,
                 },
-                "travelMode": "TRANSIT"
+                "travelMode": "TRANSIT",
+                "computeAlternativeRoutes": true
         } ,
         {
             headers : {
