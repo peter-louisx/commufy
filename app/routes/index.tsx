@@ -6,7 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import MapView, { LatLng, Region, Polyline, Marker } from "react-native-maps";
+import MapView, {
+  LatLng,
+  Region,
+  Polyline,
+  Marker,
+  PROVIDER_GOOGLE,
+} from "react-native-maps";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
@@ -215,6 +221,7 @@ export default function HomeScreen() {
             showsPointsOfInterest={false}
             showsBuildings={false}
             showsIndoors={false}
+            provider={PROVIDER_GOOGLE}
           >
             {routeSteps.length > 0 &&
               routeSteps.map((step, index) => (
