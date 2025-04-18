@@ -6,8 +6,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Link, router } from "expo-router";
 import "react-native-get-random-values";
+import { useAuth } from "@/components/context/AuthContext";
 
 export default function HomeScreen() {
+  const { session } = useAuth();
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}

@@ -12,12 +12,14 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Toast from "react-native-toast-message";
+import { AuthProvider, useAuth } from "@/components/context/AuthContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -34,31 +36,33 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName="index">
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="routes/index"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="+not-found"
-          options={{
-            title: "Not Found",
-            headerTitleAlign: "center",
+      <AuthProvider>
+        <Stack initialRouteName="index">
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="routes/index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="+not-found"
+            options={{
+              title: "Not Found",
+              headerTitleAlign: "center",
 
-            headerTitleStyle: {
-              fontWeight: "bold",
-            },
-          }}
-        />
-        {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="routes" />
         <Stack.Screen name="+not-found" /> */}
-      </Stack>
-      <StatusBar style="auto" />
-      <Toast />
+        </Stack>
+        <StatusBar style="auto" />
+        <Toast />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
