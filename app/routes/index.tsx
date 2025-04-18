@@ -185,6 +185,7 @@ export default function HomeScreen() {
             getRouteDetails(data.description);
           }}
           query={{
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
             language: "id",
           }}
           styles={{
@@ -362,7 +363,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    paddingTop: 30,
+    paddingTop: 20,
+    backgroundColor: "white",
     flexDirection: "column",
   },
   map: {

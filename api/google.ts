@@ -19,6 +19,7 @@ export const GoogleAPI = {
         } ,
         {
             headers : {
+                "X-Goog-Api-Key": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
                 "X-Goog-FieldMask": "routes.*",
             }
         })
