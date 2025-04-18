@@ -26,6 +26,9 @@ export default function HomeScreen() {
         <Link href={"/routes" as any}>
           <ThemedText type="defaultSemiBold">Go To routes</ThemedText>
         </Link>
+        <Link href={"/weather" as any}>
+          <ThemedText type="defaultSemiBold">Go To weather</ThemedText>
+        </Link>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
@@ -68,7 +71,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     gap: 8,
   },

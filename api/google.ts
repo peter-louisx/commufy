@@ -23,5 +23,18 @@ export const GoogleAPI = {
                 "X-Goog-FieldMask": "routes.*",
             }
         })
-    } 
+    } ,
+    async getWeatherDetails(lat : number, lng : number, hours: number = 24) {
+        return await axios.get(`https://weather.googleapis.com/v1/forecast/hours:lookup`, {
+            params: {
+                "key": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
+                "location.latitude": lat,
+                "location.longitude": lng,
+                "hours": hours,
+            },
+            headers : {
+                "X-Goog-Api-Key": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
+            }
+        })
+    }
 }

@@ -46,6 +46,12 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name="weather/index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
             name="+not-found"
             options={{
               title: "Not Found",
