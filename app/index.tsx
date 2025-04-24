@@ -29,6 +29,9 @@ export default function HomeScreen() {
         <Link href={"/weather" as any}>
           <ThemedText type="defaultSemiBold">Go To weather</ThemedText>
         </Link>
+        <Link href={"/profile" as any}>
+          <ThemedText type="defaultSemiBold">Go To Profile</ThemedText>
+        </Link>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

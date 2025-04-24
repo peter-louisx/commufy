@@ -67,7 +67,7 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Weather Information</ThemedText>
+        <ThemedText type="title">Testing Weather Information</ThemedText>
         <HelloWave />
       </ThemedView>
 
