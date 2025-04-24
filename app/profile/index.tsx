@@ -49,9 +49,12 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.menuContainer}>
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="person-outline" size={20} color="#333" />
-          <Text style={styles.menuText}>My Profile</Text>
+          <Link href="/profile/MyProfile" style={{ flex: 1 }}>
+            <Text style={styles.menuText}>My Profile</Text>
+          </Link>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
+
         <View style={styles.separator} />
 
         <TouchableOpacity style={styles.menuItem}>
