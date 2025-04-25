@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Button } from "react-native";
+import { View, Button, ScrollView } from "react-native";
 import ToastNotification from "../../components/toast/ToastNotification";
+import WeatherCard from "../../components/weather/WeatherCard";
 
 const ExampleScreen = () => {
   const [showToast, setShowToast] = useState(false);
@@ -9,7 +10,7 @@ const ExampleScreen = () => {
   const handleCloseToast = () => setShowToast(false);
 
   return (
-    <View>
+    <View style={{ flex: 1, padding: 20 }}>
       <Button title="Show Toast" onPress={handleShowToast} />
       <ToastNotification
         visible={showToast}
@@ -17,6 +18,14 @@ const ExampleScreen = () => {
         message="Segera persiapkan jas hujan!"
         onClose={handleCloseToast}
       />
+
+      <ScrollView style={{ marginTop: 20 }}>
+        <WeatherCard
+          temperature={28}
+          location="Bandung, Indonesia"
+          icon="sunny"
+        />
+      </ScrollView>
     </View>
   );
 };
