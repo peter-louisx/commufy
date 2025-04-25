@@ -1,83 +1,238 @@
-import { Image, StyleSheet, Platform, Pressable } from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Link, router } from "expo-router";
-import "react-native-get-random-values";
-import { useAuth } from "@/components/context/AuthContext";
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  ScrollView,
+  View,
+  Text,
+} from "react-native";
+import { Link } from "expo-router";
+import { mainColor } from "@/constants/Colors";
+import WeatherCard from "@/components/weather/WeatherCard";
+import { SearchBar } from "react-native-screens";
+import { FontAwesome5 } from "@expo/vector-icons";
+import Icons from "@/components/icons";
 
 export default function HomeScreen() {
-  const { session } = useAuth();
-
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome! afaf</ThemedText>
-        <Link href={"/routes" as any}>
-          <ThemedText type="defaultSemiBold">Go To routes</ThemedText>
+    <ScrollView style={{ backgroundColor: "white" }}>
+      <View
+        style={{
+          height: 275,
+          position: "relative",
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: mainColor,
+            height: 220,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginTop: 80,
+              paddingHorizontal: 16,
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 16,
+                }}
+              >
+                John Doe
+              </Text>
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}
+              >
+                Good Morning
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+              }}
+            >
+              <Icons.Notification size={32} color={"white"} />
+              <Image
+                source={require("@/assets/images/111.png")}
+                style={{
+                  width: 40,
+                  height: 40,
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <WeatherCard
+            temperature={28}
+            location="Bandung, Indonesia"
+            icon="sunny"
+          />
+        </View>
+      </View>
+
+      <View
+        style={{
+          padding: 16,
+        }}
+      >
+        <Link href={"/route"}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 16,
+              borderWidth: 1,
+              borderColor: mainColor,
+              borderRadius: 48,
+            }}
+          >
+            <FontAwesome5
+              name="search"
+              size={24}
+              color={"#616161"}
+              style={{}}
+            />
+
+            <View
+              style={{
+                flex: 1,
+                paddingLeft: 16,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: "left",
+                  color: "#616161",
+                  fontSize: 16,
+                }}
+              >
+                Where are you going today?
+              </Text>
+            </View>
+          </View>
         </Link>
-        <Link href={"/weather" as any}>
-          <ThemedText type="defaultSemiBold">Go To weather</ThemedText>
-        </Link>
-        <Link href={"/profile" as any}>
-          <ThemedText type="defaultSemiBold">Go To Profile</ThemedText>
-        </Link>
-        <Link href={"/testing" as any}>
-          <ThemedText type="defaultSemiBold">Go To Testing Toast</ThemedText>
-        </Link>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this
-          starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{" "}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+
+      <View
+        style={{
+          padding: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#11181C",
+            marginBottom: 16,
+          }}
+        >
+          Your Favourite
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            borderWidth: 1,
+            borderColor: mainColor,
+            borderRadius: 48,
+            borderStyle: "dashed",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: mainColor,
+                fontSize: 16,
+              }}
+            >
+              Add your favorite
+            </Text>
+            <FontAwesome5 name="plus" size={24} color={mainColor} />
+          </View>
+        </View>
+      </View>
+
+      <View
+        style={{
+          padding: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#11181C",
+            marginBottom: 16,
+          }}
+        >
+          Your History
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: mainColor,
+                fontSize: 16,
+              }}
+            >
+              No history yet
+            </Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
