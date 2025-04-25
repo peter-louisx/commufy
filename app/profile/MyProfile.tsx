@@ -16,7 +16,7 @@ import { Link } from "expo-router";
 import { useTheme } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 
-export default function ProfileScreen() {
+export default function MyProfile() {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
