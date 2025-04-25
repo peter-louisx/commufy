@@ -67,9 +67,9 @@ export default function ProfileScreen() {
       <View style={[styles.topMargin, { backgroundColor: "#007bff" }]}></View>
 
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Link href="/profile">
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Link>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
       </View>
 
