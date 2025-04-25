@@ -37,8 +37,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <Stack initialRouteName="index">
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack>
+          {/* <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen
             name="routes/index"
             options={{
@@ -61,10 +61,9 @@ export default function RootLayout() {
                 fontWeight: "bold",
               },
             }}
-          />
-          {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="routes" />
-        <Stack.Screen name="+not-found" /> */}
+          /> */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
         <Toast />

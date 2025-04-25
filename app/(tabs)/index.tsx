@@ -1,12 +1,16 @@
-import { Image, StyleSheet, Platform } from "react-native";
+import { Image, StyleSheet, Platform, Pressable } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import "react-native-get-random-values";
+import { useAuth } from "@/components/context/AuthContext";
 
 export default function HomeScreen() {
+  const { session } = useAuth();
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -19,6 +23,18 @@ export default function HomeScreen() {
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome! afaf</ThemedText>
+        <Link href={"/routes" as any}>
+          <ThemedText type="defaultSemiBold">Go To routes</ThemedText>
+        </Link>
+        <Link href={"/weather" as any}>
+          <ThemedText type="defaultSemiBold">Go To weather</ThemedText>
+        </Link>
+        <Link href={"/profile" as any}>
+          <ThemedText type="defaultSemiBold">Go To Profile</ThemedText>
+        </Link>
+        <Link href={"/testing" as any}>
+          <ThemedText type="defaultSemiBold">Go To Testing Toast</ThemedText>
+        </Link>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
@@ -61,7 +77,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     gap: 8,
   },

@@ -53,7 +53,7 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.menuContainer}>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => router.navigate("/profile/myprofile")}
+          onPress={() => router.navigate("/my-profile" as any)}
         >
           <Ionicons name="person-outline" size={20} color="#333" />
           <Text style={styles.menuText}>My Profile</Text>
