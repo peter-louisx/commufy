@@ -8,15 +8,19 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  TextInput,
+  Modal,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useTheme } from "@react-navigation/native";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
+
   const navigation = useNavigation();
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -25,15 +29,15 @@ export default function ProfileScreen() {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: "#fff" }]}>
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.topMargin, { backgroundColor: "#007bff" }]}></View>
 
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Link href="/">
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Link>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
@@ -47,31 +51,41 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.navigate("/profile/myprofile")}
+        >
           <Ionicons name="person-outline" size={20} color="#333" />
-          <Link href="/profile/MyProfile" style={{ flex: 1 }}>
-            <Text style={styles.menuText}>My Profile</Text>
-          </Link>
+          <Text style={styles.menuText}>My Profile</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          // onPress={() => router.navigate("/profile/settings")}
+        >
           <Ionicons name="settings-outline" size={20} color="#333" />
           <Text style={styles.menuText}>Settings</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          // onPress={() => router.navigate("/profile/notifications")}
+        >
           <Ionicons name="notifications-outline" size={20} color="#333" />
           <Text style={styles.menuText}>Notifications</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => console.log("Logging out...")}
+        >
           <MaterialIcons name="logout" size={20} color="#E63946" />
           <Text style={[styles.menuText, { color: "#E63946" }]}>Logout</Text>
         </TouchableOpacity>
@@ -86,7 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topMargin: {
-    height: 30,
+    height: 50,
   },
   header: {
     flexDirection: "row",

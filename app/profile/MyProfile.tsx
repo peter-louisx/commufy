@@ -61,7 +61,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: "#fff" }]}>
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.topMargin, { backgroundColor: "#007bff" }]}></View>
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topMargin: {
-    height: 30,
+    height: 50,
   },
   header: {
     flexDirection: "row",
