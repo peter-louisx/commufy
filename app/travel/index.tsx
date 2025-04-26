@@ -22,6 +22,7 @@ import { GoogleAPI } from "@/api/google";
 import { getCurrentLocation } from "@/utils/location";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { useGlobalSearchParams } from "expo-router";
 
 export type Route = {
   legs: {
@@ -94,6 +95,24 @@ export default function HomeScreen() {
     }[][]
   >([]);
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
+  const params = useGlobalSearchParams();
+
+  const getRegionPositionAfterRoute = (
+    routeSteps: { latitude: number; longitude: number }[][]
+  ): Region => {
+    const allPoints = routeSteps.flat();
+    const minLat = Math.min(...allPoints.map((p) => p.latitude));
+    const maxLat = Math.max(...allPoints.map((p) => p.latitude));
+    const minLng = Math.min(...allPoints.map((p) => p.longitude));
+    const maxLng = Math.max(...allPoints.map((p) => p.longitude));
+
+    return {
+      latitude: (minLat + maxLat) / 2,
+      longitude: (minLng + maxLng) / 2,
+      latitudeDelta: maxLat - minLat + 0.01,
+      longitudeDelta: maxLng - minLng + 0.01,
+    };
+  };
 
   useEffect(() => {
     getCurrentLocation()
@@ -117,9 +136,15 @@ export default function HomeScreen() {
       });
   }, []);
 
+  useEffect(() => {
+    if (params.routeDetails) {
+      const routeDetails = JSON.parse(params.routeDetails as string);
+      console.log("Route Details:", routeDetails);
+    }
+  }, [params]);
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Map view */}
       <View
         style={{
           width: "100%",
@@ -190,49 +215,12 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    paddingTop: 20,
     backgroundColor: "white",
     flexDirection: "column",
   },
   map: {
     width: "100%",
     height: "100%",
-  },
-  autoCompleteView: {
-    width: "100%",
-    height: 65,
-    backgroundColor: "white",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  autocompleteContainer: {
-    width: "100%",
-    zIndex: 1,
-  },
-  autocompleteInput: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    padding: 10,
-    marginHorizontal: 10,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  autoCompleteList: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    position: "absolute",
-    top: 70,
-    marginHorizontal: 10,
   },
   buttonContainer: {
     position: "absolute",
@@ -249,32 +237,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "black",
-    fontWeight: "bold",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "100%",
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  closeButton: {
-    backgroundColor: "#2196F3",
-    padding: 10,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: "white",
     fontWeight: "bold",
   },
 });

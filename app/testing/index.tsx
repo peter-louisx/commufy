@@ -2,9 +2,20 @@ import React, { useState } from "react";
 import { View, Button, ScrollView } from "react-native";
 import ToastNotification from "../../components/toast/ToastNotification";
 import WeatherCard from "../../components/weather/WeatherCard";
+import { useGlobalSearchParams, useNavigation } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const ExampleScreen = () => {
   const [showToast, setShowToast] = useState(false);
+
+  const params = useGlobalSearchParams();
+
+  React.useEffect(() => {
+    if (params.routeDetails) {
+      const routeDetails = JSON.parse(params.routeDetails as string);
+      console.log("Route Details:", routeDetails);
+    }
+  }, [params]);
 
   const handleShowToast = () => setShowToast(true);
   const handleCloseToast = () => setShowToast(false);

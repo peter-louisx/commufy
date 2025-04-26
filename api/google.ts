@@ -1,26 +1,28 @@
 import axios from './axios'
 
 export const GoogleAPI = {
-    async getTargetRouteDetails(address : string, lat : number, lng : number) {
+    async getTargetRouteDetails(address : string, lat : number, lng : number, date: string = "2023-10-01", time: string = "12:00:00") {
+        const departureTime = `${date}T${time}Z`;
         return await axios.post(`https://routes.googleapis.com/directions/v2:computeRoutes`, {
             "origin": {
-                "location": {
-                    "latLng": {
-                      "latitude": lat,
-                      "longitude": lng
-                    }
-                  }
-                },
-                "destination": {
-                  "address": address,
-                },
-                "travelMode": "TRANSIT",
-                "computeAlternativeRoutes": true
+            "location": {
+                "latLng": {
+                  "latitude": lat,
+                  "longitude": lng
+                }
+              }
+            },
+            "destination": {
+              "address": address,
+            },
+            "travelMode": "TRANSIT",
+            // "departureTime": departureTime,
+            "computeAlternativeRoutes": true
         } ,
         {
             headers : {
-                "X-Goog-Api-Key": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
-                "X-Goog-FieldMask": "routes.*",
+            "X-Goog-Api-Key": process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
+            "X-Goog-FieldMask": "routes.*",
             }
         })
     } ,
