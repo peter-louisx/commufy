@@ -37,31 +37,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <Stack>
-          {/* <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack initialRouteName="index">
           <Stack.Screen
-            name="routes/index"
+            name="index"
             options={{
               headerShown: false,
             }}
           />
-          <Stack.Screen
-            name="weather/index"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="+not-found"
-            options={{
-              title: "Not Found",
-              headerTitleAlign: "center",
-
-              headerTitleStyle: {
-                fontWeight: "bold",
-              },
-            }}
-          /> */}
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen
