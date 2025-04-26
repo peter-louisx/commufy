@@ -8,6 +8,11 @@ export async function getCurrentLocation() {
     }
 
     let location = await Location.getCurrentPositionAsync({});
+
+    let address = "Unknown location";
+
+    
+
     const { coords } = location;
 
     if (coords) {
@@ -17,13 +22,20 @@ export async function getCurrentLocation() {
             latitude,
             longitude,
         });
-        // response.then((data) => {
-        //     console.log("Location data:", data);
-        // });
+
+        address = await response.then((data) => {
+            if (data.length > 0) {
+                return data[0].formattedAddress as string;
+            } else {
+                return "Unknown location";
+            }
+        }
+        );
+
     } else {
         throw new Error("Unable to retrieve location coordinates");
     }
       
-    return location;
+    return {location, address};
 }
 

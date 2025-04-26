@@ -99,6 +99,12 @@ export type Route = {
 
 export default function HomeScreen() {
   const [endLocation, setEndLocation] = useState<LatLng | null>(null);
+  const [generalRouteInfo, setGeneralRouteInfo] = useState<{
+    distance: string;
+    duration: string;
+    transitFare: string;
+  } | null>(null);
+
   const [routeSteps, setRouteSteps] = useState<
     {
       latitude: number;
@@ -113,10 +119,13 @@ export default function HomeScreen() {
       distance: number;
       duration: string;
       travelMode: string;
+      time: string;
     }[]
   >([]);
+
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
   const params = useGlobalSearchParams();
+
   // hooks
   const sheetRef = useRef<BottomSheet>(null);
 
@@ -127,35 +136,44 @@ export default function HomeScreen() {
       instructions: step.instructions,
       distance: step.distance,
       duration: step.duration,
+      time: step.time,
     }));
   }, [routeSteps]);
 
-  const snapPoints = useMemo(() => ["10%", "25%", "50%", "90%"], []);
+  const snapPoints = useMemo(() => ["15%", "25%", "50%", "90%"], []);
 
-  // callbacks
-  const handleSheetChange = useCallback((index: number) => {
-    console.log("handleSheetChange", index);
-  }, []);
-
-  // render
   const renderItem = useCallback(
     (item: any, index: number) => (
       <View
+        key={index + "step"}
         style={{
           borderLeftWidth: 2,
-          borderLeftColor: mainColor,
+          borderLeftColor: item.travelMode === "WALK" ? "#4287f5" : "#f54242",
+          paddingBottom: 40,
         }}
       >
-        <View
-          style={{
-            width: 15,
-            height: 15,
-            borderRadius: 30,
-            backgroundColor: mainColor,
-            position: "relative",
-            left: -8,
-          }}
-        ></View>
+        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+          <View
+            style={{
+              width: 15,
+              height: 15,
+              borderRadius: 30,
+              backgroundColor: mainColor,
+              position: "relative",
+              left: -8,
+            }}
+          ></View>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 20,
+              position: "relative",
+              top: -5,
+            }}
+          >
+            {item.time}
+          </Text>
+        </View>
         <View key={index} style={styles.itemContainer}>
           <FontAwesome5
             name={item.travelMode === "WALK" ? "walking" : "bus"}
@@ -170,12 +188,14 @@ export default function HomeScreen() {
             {item.instructions}
           </Text>
           <Text>{item.distance} meters</Text>
+
           <Text>{convertSecondIntoMinute(item.distance)}</Text>
         </View>
       </View>
     ),
     []
   );
+
   const getRegionPositionAfterRoute = (
     routeSteps: { latitude: number; longitude: number }[][]
   ): Region => {
@@ -208,12 +228,34 @@ export default function HomeScreen() {
         }));
       });
 
-      const stepsDescription = routeDetails.legs[0].steps.map((step) => ({
-        instructions: step.navigationInstruction.instructions,
-        distance: step.distanceMeters,
-        duration: step.staticDuration,
-        travelMode: step.travelMode,
-      }));
+      setGeneralRouteInfo({
+        distance: routeDetails.localizedValues.distance.text,
+        duration: routeDetails.localizedValues.duration.text,
+        transitFare: routeDetails.travelAdvisory.transitFare.units,
+      });
+
+      const currentTime = new Date();
+
+      const stepsDescription = routeDetails.legs[0].steps.map((step) => {
+        const stepDurationInSeconds = parseInt(step.staticDuration, 10);
+        const stepEndTime = new Date(
+          currentTime.getTime() + stepDurationInSeconds * 1000
+        );
+        const formattedTime = stepEndTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        currentTime.setTime(stepEndTime.getTime());
+
+        return {
+          instructions: step.navigationInstruction.instructions,
+          distance: step.distanceMeters,
+          duration: step.staticDuration,
+          travelMode: step.travelMode,
+          time: formattedTime,
+        };
+      });
 
       const endLocation = routeDetails.legs[0].endLocation.latLng;
 
@@ -305,10 +347,9 @@ export default function HomeScreen() {
 
       <BottomSheet
         ref={sheetRef}
-        index={1}
+        index={0}
         snapPoints={snapPoints}
         enableDynamicSizing={false}
-        onChange={handleSheetChange}
       >
         <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
           <ScrollView
@@ -317,6 +358,42 @@ export default function HomeScreen() {
               paddingHorizontal: 10,
             }}
           >
+            <View key="routeDetails">
+              {generalRouteInfo && (
+                <View key="generalInfo" style={{ marginBottom: 20 }}>
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 20,
+                      marginBottom: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    {generalRouteInfo.duration}
+                  </Text>
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 15,
+                      marginBottom: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    {generalRouteInfo.distance}
+                  </Text>
+
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 15,
+                      marginBottom: 10,
+                    }}
+                  >
+                    {generalRouteInfo.transitFare}
+                  </Text>
+                </View>
+              )}
+            </View>
             {data.map(renderItem)}
           </ScrollView>
         </BottomSheetScrollView>

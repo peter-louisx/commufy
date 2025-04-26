@@ -1,24 +1,13 @@
-import React, { useLayoutEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
-  Modal,
-} from "react-native";
+import React, { useEffect } from "react";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { FontAwesome5 } from "@expo/vector-icons";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { LatLng } from "react-native-maps";
-import { color } from "@rneui/themed/dist/config";
 import { mainColor } from "@/constants/Colors";
-import { Filter } from "react-native-svg";
+import { getCurrentLocation } from "@/utils/location";
+import { showErrorToast } from "@/utils/toast";
 
 export type RouteFilterProps = {
   start: LatLng;
@@ -63,6 +52,30 @@ export default function RouteFilter({
     time: convertTimeToString(new Date()),
   });
 
+  useEffect(() => {
+    getCurrentLocation()
+      .then((resp) => {
+        const { location, address } = resp;
+        if (location) {
+          setFilters((prev) => ({
+            ...prev,
+            start: {
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            },
+            startLocationName: address,
+          }));
+        } else {
+          showErrorToast(
+            "Location not found. Please enable location services."
+          );
+        }
+      })
+      .catch((error) => {
+        showErrorToast("Failed to get current location");
+      });
+  }, []);
+
   return (
     <View
       style={{
@@ -84,7 +97,11 @@ export default function RouteFilter({
             Location
           </Text>
           <GooglePlacesAutocomplete
-            placeholder="Search your starting point"
+            placeholder={
+              filters.startLocationName
+                ? "Current Location"
+                : "Search your location"
+            }
             fetchDetails={true}
             disableScroll={true}
             onPress={(data, details: any) => {

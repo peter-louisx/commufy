@@ -16,12 +16,8 @@ import MapView, {
 import { View } from "react-native";
 import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import polyline from "@mapbox/polyline";
-import { GoogleAPI } from "@/api/google";
 import { getCurrentLocation } from "@/utils/location";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 export type Route = {
   legs: {
@@ -94,28 +90,6 @@ export default function HomeScreen() {
     }[][]
   >([]);
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
-
-  useEffect(() => {
-    getCurrentLocation()
-      .then((location) => {
-        if (location) {
-          setLocation(location);
-          setMapRegion({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          });
-        } else {
-          showErrorToast(
-            "Location not found. Please enable location services."
-          );
-        }
-      })
-      .catch((error) => {
-        showErrorToast("Failed to get current location");
-      });
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -190,91 +164,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    paddingTop: 20,
     backgroundColor: "white",
     flexDirection: "column",
   },
   map: {
     width: "100%",
     height: "100%",
-  },
-  autoCompleteView: {
-    width: "100%",
-    height: 65,
-    backgroundColor: "white",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  autocompleteContainer: {
-    width: "100%",
-    zIndex: 1,
-  },
-  autocompleteInput: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    padding: 10,
-    marginHorizontal: 10,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  autoCompleteList: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    position: "absolute",
-    top: 70,
-    marginHorizontal: 10,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 140,
-    right: 20,
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  buttonText: {
-    color: "black",
-    fontWeight: "bold",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "100%",
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  closeButton: {
-    backgroundColor: "#2196F3",
-    padding: 10,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });

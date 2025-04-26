@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -19,6 +19,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { mainColor } from "@/constants/Colors";
 import { convertSecondIntoMinute } from "@/utils/time";
 import { showErrorToast } from "@/utils/toast";
+import { getCurrentLocation } from "@/utils/location";
 
 type RootStackParamList = {
   routeDetails: { routeDetails: string };
