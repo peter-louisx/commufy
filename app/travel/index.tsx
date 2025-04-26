@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Modal,
-  Text,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { StyleSheet, Text } from "react-native";
 import MapView, {
   LatLng,
   Region,
@@ -14,15 +14,19 @@ import MapView, {
   PROVIDER_GOOGLE,
 } from "react-native-maps";
 import { View } from "react-native";
-import { SafeAreaView } from "react-native";
 import * as Location from "expo-location";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import polyline from "@mapbox/polyline";
 import { GoogleAPI } from "@/api/google";
 import { getCurrentLocation } from "@/utils/location";
-import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useGlobalSearchParams } from "expo-router";
+import {
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { convertSecondIntoMinute } from "@/utils/time";
+import { mainColor } from "@/constants/Colors";
 
 export type Route = {
   legs: {
@@ -49,6 +53,17 @@ export type Route = {
       travelMode: string;
       distanceMeters: number;
       staticDuration: string;
+      navigationInstruction: {
+        instructions: string;
+      };
+      localizedValues: {
+        distance: {
+          text: string;
+        };
+        staticDuration: {
+          text: string;
+        };
+      };
     }[];
   }[];
   distanceMeters: string;
@@ -83,9 +98,6 @@ export type Route = {
 };
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
   const [endLocation, setEndLocation] = useState<LatLng | null>(null);
   const [routeSteps, setRouteSteps] = useState<
     {
@@ -94,9 +106,76 @@ export default function HomeScreen() {
       travelMode: string;
     }[][]
   >([]);
+
+  const [routeDescription, setRouteDescription] = useState<
+    {
+      instructions: string;
+      distance: number;
+      duration: string;
+      travelMode: string;
+    }[]
+  >([]);
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
   const params = useGlobalSearchParams();
+  // hooks
+  const sheetRef = useRef<BottomSheet>(null);
 
+  // variables
+  const data = useMemo(() => {
+    return routeDescription.map((step) => ({
+      travelMode: step.travelMode,
+      instructions: step.instructions,
+      distance: step.distance,
+      duration: step.duration,
+    }));
+  }, [routeSteps]);
+
+  const snapPoints = useMemo(() => ["10%", "25%", "50%", "90%"], []);
+
+  // callbacks
+  const handleSheetChange = useCallback((index: number) => {
+    console.log("handleSheetChange", index);
+  }, []);
+
+  // render
+  const renderItem = useCallback(
+    (item: any, index: number) => (
+      <View
+        style={{
+          borderLeftWidth: 2,
+          borderLeftColor: mainColor,
+        }}
+      >
+        <View
+          style={{
+            width: 15,
+            height: 15,
+            borderRadius: 30,
+            backgroundColor: mainColor,
+            position: "relative",
+            left: -8,
+          }}
+        ></View>
+        <View key={index} style={styles.itemContainer}>
+          <FontAwesome5
+            name={item.travelMode === "WALK" ? "walking" : "bus"}
+            size={30}
+            color={item.travelMode === "WALK" ? "#4287f5" : "#f54242"}
+          />
+          <Text
+            style={{
+              fontWeight: "bold",
+            }}
+          >
+            {item.instructions}
+          </Text>
+          <Text>{item.distance} meters</Text>
+          <Text>{convertSecondIntoMinute(item.distance)}</Text>
+        </View>
+      </View>
+    ),
+    []
+  );
   const getRegionPositionAfterRoute = (
     routeSteps: { latitude: number; longitude: number }[][]
   ): Region => {
@@ -115,36 +194,50 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    getCurrentLocation()
-      .then((location) => {
-        if (location) {
-          setLocation(location);
-          setMapRegion({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          });
-        } else {
-          showErrorToast(
-            "Location not found. Please enable location services."
-          );
-        }
-      })
-      .catch((error) => {
-        showErrorToast("Failed to get current location");
-      });
-  }, []);
-
-  useEffect(() => {
     if (params.routeDetails) {
-      const routeDetails = JSON.parse(params.routeDetails as string);
-      console.log("Route Details:", routeDetails);
+      const routeDetails = JSON.parse(params.routeDetails as string) as Route;
+      const steps = routeDetails.legs[0].steps.map((step) => {
+        const decodedPolyline = polyline.decode(step.polyline.encodedPolyline);
+        return decodedPolyline.map((point) => ({
+          latitude: point[0],
+          longitude: point[1],
+          travelMode: step.travelMode,
+          instructions: step.navigationInstruction.instructions,
+          distance: step.distanceMeters,
+          duration: step.staticDuration,
+        }));
+      });
+
+      const stepsDescription = routeDetails.legs[0].steps.map((step) => ({
+        instructions: step.navigationInstruction.instructions,
+        distance: step.distanceMeters,
+        duration: step.staticDuration,
+        travelMode: step.travelMode,
+      }));
+
+      const endLocation = routeDetails.legs[0].endLocation.latLng;
+
+      setRouteDescription(stepsDescription);
+
+      setEndLocation({
+        latitude: endLocation.latitude,
+        longitude: endLocation.longitude,
+      });
+
+      setRouteSteps(steps);
+      setMapRegion({
+        latitude: endLocation.latitude,
+        longitude: endLocation.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      });
+
+      setMapRegion(getRegionPositionAfterRoute(steps));
     }
   }, [params]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <GestureHandlerRootView style={styles.sheetContainer}>
       <View
         style={{
           width: "100%",
@@ -209,7 +302,26 @@ export default function HomeScreen() {
           </MapView>
         )}
       </View>
-    </SafeAreaView>
+
+      <BottomSheet
+        ref={sheetRef}
+        index={1}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        onChange={handleSheetChange}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
+          <ScrollView
+            style={{
+              flex: 1,
+              paddingHorizontal: 10,
+            }}
+          >
+            {data.map(renderItem)}
+          </ScrollView>
+        </BottomSheetScrollView>
+      </BottomSheet>
+    </GestureHandlerRootView>
   );
 }
 
@@ -220,7 +332,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: "100%",
+    height: "90%",
   },
   buttonContainer: {
     position: "absolute",
@@ -238,5 +350,18 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "black",
     fontWeight: "bold",
+  },
+
+  sheetContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  itemContainer: {
+    padding: 6,
+    paddingLeft: 18,
   },
 });
