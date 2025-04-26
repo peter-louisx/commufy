@@ -77,15 +77,7 @@ export default function RouteFilter({
   }, []);
 
   return (
-    <View
-      style={{
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        position: "absolute",
-        width: "100%",
-        bottom: 0,
-      }}
-    >
+    <View style={styles.container}>
       <View style={styles.filterContainer}>
         <View>
           <Text
@@ -145,7 +137,6 @@ export default function RouteFilter({
         <View
           style={{
             marginTop: 20,
-            zIndex: 1,
           }}
         >
           <Text
@@ -198,26 +189,11 @@ export default function RouteFilter({
           />
         </View>
 
-        <View
-          style={{
-            marginTop: 20,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
+        <View style={styles.datePickerContainer}>
           <View>
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                backgroundColor: mainColor,
-                borderRadius: 30,
-                paddingHorizontal: 13,
-                paddingVertical: 8,
-              }}
+              style={styles.datePickerButton}
             >
               <FontAwesome5 name="calendar-alt" size={24} color={"white"} />
               <Text style={{ color: "white", fontSize: 16 }}>
@@ -248,15 +224,7 @@ export default function RouteFilter({
           <View>
             <TouchableOpacity
               onPress={() => setShowTimePicker(true)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                backgroundColor: mainColor,
-                borderRadius: 30,
-                paddingHorizontal: 13,
-                paddingVertical: 8,
-              }}
+              style={styles.datePickerButton}
             >
               <FontAwesome5 name="clock" size={24} color={"white"} />
               <Text style={{ color: "white", fontSize: 16 }}>
@@ -286,13 +254,7 @@ export default function RouteFilter({
           </View>
         </View>
 
-        <View
-          style={{
-            marginTop: 30,
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
+        <View style={styles.findRouteContainer}>
           <TouchableOpacity
             onPress={() => {
               fetchRoutes({
@@ -302,23 +264,9 @@ export default function RouteFilter({
                 time: filters.time,
               });
             }}
-            style={{
-              width: "100%",
-              backgroundColor: mainColor,
-              height: "auto",
-              borderRadius: 30,
-              paddingVertical: 10,
-            }}
+            style={styles.findRouteButton}
           >
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize: 18,
-                color: "white",
-              }}
-            >
-              Find Route and Transport
-            </Text>
+            <Text style={styles.findRouteText}>Find Route and Transport</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -327,6 +275,13 @@ export default function RouteFilter({
 }
 
 export const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    position: "absolute",
+    width: "100%",
+    bottom: 0,
+  },
   filterContainer: {
     width: "100%",
     elevation: 2,
@@ -335,6 +290,21 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: "white",
     zIndex: 1,
+  },
+  datePickerContainer: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: mainColor,
+    borderRadius: 30,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
   },
   autoCompleteContainer: {
     marginTop: 10,
@@ -356,5 +326,22 @@ export const styles = StyleSheet.create({
     width: "100%",
     top: 70,
     elevation: 2,
+  },
+  findRouteContainer: {
+    marginTop: 30,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  findRouteButton: {
+    width: "100%",
+    backgroundColor: mainColor,
+    height: "auto",
+    borderRadius: 30,
+    paddingVertical: 10,
+  },
+  findRouteText: {
+    textAlign: "center",
+    fontSize: 18,
+    color: "white",
   },
 });

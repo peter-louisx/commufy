@@ -81,16 +81,31 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
-  const [endLocation, setEndLocation] = useState<LatLng | null>(null);
-  const [routeSteps, setRouteSteps] = useState<
-    {
-      latitude: number;
-      longitude: number;
-      travelMode: string;
-    }[][]
-  >([]);
+
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
 
+  useEffect(() => {
+    getCurrentLocation()
+      .then((resp) => {
+        const { location, address } = resp;
+        if (location) {
+          setLocation(location);
+          setMapRegion({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          });
+        } else {
+          showErrorToast(
+            "Location not found. Please enable location services."
+          );
+        }
+      })
+      .catch((error) => {
+        showErrorToast("Failed to get current location");
+      });
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       {/* Map view */}
@@ -113,49 +128,7 @@ export default function HomeScreen() {
             showsBuildings={false}
             showsIndoors={false}
             provider={PROVIDER_GOOGLE}
-          >
-            {routeSteps.length > 0 &&
-              routeSteps.map((step, index) => (
-                <>
-                  {step[0].travelMode === "WALK" && (
-                    <Polyline
-                      key={index + "walk"}
-                      coordinates={step.map((point) => ({
-                        latitude: point.latitude,
-                        longitude: point.longitude,
-                      }))}
-                      strokeColor={"#4287f5"}
-                      lineDashPattern={[10, 5]}
-                      geodesic={true}
-                      strokeWidth={8}
-                    />
-                  )}
-                  {step[0].travelMode === "TRANSIT" && (
-                    <Polyline
-                      key={index + "transit"}
-                      coordinates={step.map((point) => ({
-                        latitude: point.latitude,
-                        longitude: point.longitude,
-                      }))}
-                      strokeColor={"#f54242"}
-                      strokeWidth={5}
-                    />
-                  )}
-                </>
-              ))}
-            {
-              // Display the marker for end location
-              endLocation && (
-                <Marker
-                  key="endLocation"
-                  coordinate={{
-                    latitude: endLocation.latitude,
-                    longitude: endLocation.longitude,
-                  }}
-                />
-              )
-            }
-          </MapView>
+          ></MapView>
         )}
       </View>
     </SafeAreaView>

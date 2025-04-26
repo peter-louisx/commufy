@@ -19,7 +19,6 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { mainColor } from "@/constants/Colors";
 import { convertSecondIntoMinute } from "@/utils/time";
 import { showErrorToast } from "@/utils/toast";
-import { getCurrentLocation } from "@/utils/location";
 
 type RootStackParamList = {
   routeDetails: { routeDetails: string };
@@ -167,14 +166,7 @@ export default function MuRoute() {
                       },
                     ]}
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: 8,
-                      }}
-                    >
+                    <View style={styles.routeInfo}>
                       <FontAwesome5
                         name="map-marker-alt"
                         size={24}
@@ -185,18 +177,7 @@ export default function MuRoute() {
                           left: -8,
                         }}
                       />
-                      <Text
-                        style={{
-                          fontWeight: "bold",
-                          fontSize: 12,
-                          color: "white",
-                          backgroundColor: mainColor,
-                          padding: 8,
-                          borderRadius: 20,
-                        }}
-                      >
-                        {route.totalTime}
-                      </Text>
+                      <Text style={styles.totalTime}>{route.totalTime}</Text>
                     </View>
                     {route.overviewSteps.map((step, stepIndex) => (
                       <View
@@ -206,43 +187,18 @@ export default function MuRoute() {
                           borderLeftColor: mainColor,
                         }}
                       >
-                        <View
-                          style={{
-                            width: 15,
-                            height: 15,
-                            borderRadius: 30,
-                            backgroundColor: mainColor,
-                            position: "relative",
-                            top: -5,
-                            left: -8,
-                          }}
-                        ></View>
+                        <View style={styles.routeCircle}></View>
                         <View
                           key={stepIndex}
-                          style={{
-                            borderBottomWidth:
-                              stepIndex != route.overviewSteps.length - 1
-                                ? 1
-                                : 0,
-                            borderBottomColor: "#BDBDBD",
-                            paddingVertical: 16,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            paddingLeft: 16,
-                            gap: 20,
-                          }}
+                          style={[
+                            styles.routeInfoContainer,
+                            {
+                              backgroundColor:
+                                selectedRoute == index ? "#AFCAF7" : "white",
+                            },
+                          ]}
                         >
-                          <View
-                            style={{
-                              backgroundColor: mainColor,
-                              padding: 12,
-                              minWidth: 50,
-                              maxWidth: 50,
-                              borderRadius: 10,
-                              flexDirection: "row",
-                              justifyContent: "center",
-                            }}
-                          >
+                          <View style={styles.travelIcon}>
                             <FontAwesome5
                               name={
                                 step.travelMode === "TRANSIT"
@@ -286,14 +242,7 @@ export default function MuRoute() {
           )}
 
           {loadingRoutes && (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                height: 500,
-              }}
-            >
+            <View style={styles.loaderContainer}>
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 Loading routes...
               </Text>
@@ -303,22 +252,9 @@ export default function MuRoute() {
       </ScrollView>
 
       {selectedRoute !== -1 && routeStepsOverview.length > 0 && (
-        <View
-          style={{
-            position: "absolute",
-            bottom: 16,
-            left: 16,
-            right: 16,
-            zIndex: 10,
-          }}
-        >
+        <View style={styles.findRouteContainer}>
           <TouchableOpacity
-            style={{
-              backgroundColor: "#007bff",
-              padding: 16,
-              borderRadius: 10,
-              alignItems: "center",
-            }}
+            style={styles.findRouteButton}
             onPress={() => {
               const selectedRouteDetails = routeStepsOverview[selectedRoute];
               router.push({
@@ -375,5 +311,68 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: "white",
     borderRadius: 10,
+  },
+  findRouteContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+  },
+  findRouteButton: {
+    backgroundColor: mainColor,
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 500,
+  },
+
+  routeInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  totalTime: {
+    fontWeight: "bold",
+    fontSize: 12,
+    color: "white",
+    backgroundColor: mainColor,
+    padding: 8,
+    borderRadius: 20,
+  },
+  routeCircle: {
+    width: 15,
+    height: 15,
+    borderRadius: 30,
+    backgroundColor: mainColor,
+    position: "relative",
+    top: -5,
+    left: -8,
+  },
+  travelIcon: {
+    backgroundColor: mainColor,
+    padding: 12,
+    minWidth: 50,
+    maxWidth: 50,
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+
+  routeInfoContainer: {
+    borderBottomColor: "#BDBDBD",
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 16,
+    gap: 20,
   },
 });
