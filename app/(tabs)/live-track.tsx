@@ -1,21 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Modal,
-  Text,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
-import MapView, {
-  LatLng,
-  Region,
-  Polyline,
-  Marker,
-  PROVIDER_GOOGLE,
-} from "react-native-maps";
+import { StyleSheet } from "react-native";
+import MapView, { LatLng, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native";
-import * as Location from "expo-location";
 import { getCurrentLocation } from "@/utils/location";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 
@@ -78,10 +65,6 @@ export type Route = {
 };
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
-
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
 
   useEffect(() => {
@@ -89,7 +72,6 @@ export default function HomeScreen() {
       .then((resp) => {
         const { location, address } = resp;
         if (location) {
-          setLocation(location);
           setMapRegion({
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
@@ -106,6 +88,7 @@ export default function HomeScreen() {
         showErrorToast("Failed to get current location");
       });
   }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Map view */}

@@ -14,12 +14,15 @@ export const AIAPI = {
     sex: string;
     speed: number;
   }) {
-    return await axios.post(`https://commufy-ai-production.up.railway.app/`, {
-      age,
-      weight,
-      height,
-      sex,
-      speed,
-    });
+    return await axios.post(
+      `https://commufy-ai-production.up.railway.app/predict`,
+      {
+        age,
+        weight,
+        height,
+        sex,
+        speed,
+      }
+    );
   },
 };

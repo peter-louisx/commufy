@@ -14,7 +14,6 @@ import MapView, {
   PROVIDER_GOOGLE,
 } from "react-native-maps";
 import { View } from "react-native";
-import * as Location from "expo-location";
 import polyline from "@mapbox/polyline";
 import { GoogleAPI } from "@/api/google";
 import { getCurrentLocation } from "@/utils/location";
@@ -27,6 +26,7 @@ import {
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { convertSecondIntoMinute } from "@/utils/time";
 import { mainColor } from "@/constants/Colors";
+import { AIAPI } from "@/api/ai";
 
 export type Route = {
   legs: {
@@ -97,7 +97,7 @@ export type Route = {
   };
 };
 
-export default function HomeScreen() {
+export default function Travel() {
   const [endLocation, setEndLocation] = useState<LatLng | null>(null);
   const [generalRouteInfo, setGeneralRouteInfo] = useState<{
     distance: string;
@@ -126,10 +126,8 @@ export default function HomeScreen() {
   const [mapRegion, setMapRegion] = useState<Region | undefined>(undefined);
   const params = useGlobalSearchParams();
 
-  // hooks
   const sheetRef = useRef<BottomSheet>(null);
 
-  // variables
   const data = useMemo(() => {
     return routeDescription.map((step) => ({
       travelMode: step.travelMode,
@@ -213,68 +211,89 @@ export default function HomeScreen() {
     };
   };
 
+  const initRoutes = async () => {
+    const routeDetails = JSON.parse(params.routeDetails as string) as Route;
+
+    const walkingSpeed = await AIAPI.predictTime({
+      age: 25,
+      weight: 70,
+      height: 175,
+      speed: 1.4,
+      sex: "M",
+    }).then((res) => {
+      console.log("Walking speed prediction:", res.data.prediction);
+      return Math.floor(res.data.prediction);
+    });
+
+    const steps = routeDetails.legs[0].steps.map((step) => {
+      const decodedPolyline = polyline.decode(step.polyline.encodedPolyline);
+      const adjustedDuration =
+        step.travelMode === "WALK" && walkingSpeed > 0
+          ? (step.distanceMeters / 100) * walkingSpeed
+          : step.staticDuration;
+
+      return decodedPolyline.map((point) => ({
+        latitude: point[0],
+        longitude: point[1],
+        travelMode: step.travelMode,
+        instructions: step.navigationInstruction.instructions,
+        distance: step.distanceMeters,
+        duration: adjustedDuration,
+      }));
+    });
+
+    setGeneralRouteInfo({
+      distance: routeDetails.localizedValues.distance.text,
+      duration: routeDetails.localizedValues.duration.text,
+      transitFare: routeDetails.travelAdvisory.transitFare.units,
+    });
+
+    const currentTime = new Date();
+
+    const stepsDescription = routeDetails.legs[0].steps.map((step) => {
+      const stepDurationInSeconds = parseInt(step.staticDuration, 10);
+      const stepEndTime = new Date(
+        currentTime.getTime() + stepDurationInSeconds * 1000
+      );
+      const formattedTime = stepEndTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      currentTime.setTime(stepEndTime.getTime());
+
+      return {
+        instructions: step.navigationInstruction.instructions,
+        distance: step.distanceMeters,
+        duration: step.staticDuration,
+        travelMode: step.travelMode,
+        time: formattedTime,
+      };
+    });
+
+    const endLocation = routeDetails.legs[0].endLocation.latLng;
+
+    setRouteDescription(stepsDescription);
+
+    setEndLocation({
+      latitude: endLocation.latitude,
+      longitude: endLocation.longitude,
+    });
+
+    setRouteSteps(steps);
+    setMapRegion({
+      latitude: endLocation.latitude,
+      longitude: endLocation.longitude,
+      latitudeDelta: 0.005,
+      longitudeDelta: 0.005,
+    });
+
+    setMapRegion(getRegionPositionAfterRoute(steps));
+  };
+
   useEffect(() => {
     if (params.routeDetails) {
-      const routeDetails = JSON.parse(params.routeDetails as string) as Route;
-      const steps = routeDetails.legs[0].steps.map((step) => {
-        const decodedPolyline = polyline.decode(step.polyline.encodedPolyline);
-        return decodedPolyline.map((point) => ({
-          latitude: point[0],
-          longitude: point[1],
-          travelMode: step.travelMode,
-          instructions: step.navigationInstruction.instructions,
-          distance: step.distanceMeters,
-          duration: step.staticDuration,
-        }));
-      });
-
-      setGeneralRouteInfo({
-        distance: routeDetails.localizedValues.distance.text,
-        duration: routeDetails.localizedValues.duration.text,
-        transitFare: routeDetails.travelAdvisory.transitFare.units,
-      });
-
-      const currentTime = new Date();
-
-      const stepsDescription = routeDetails.legs[0].steps.map((step) => {
-        const stepDurationInSeconds = parseInt(step.staticDuration, 10);
-        const stepEndTime = new Date(
-          currentTime.getTime() + stepDurationInSeconds * 1000
-        );
-        const formattedTime = stepEndTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        currentTime.setTime(stepEndTime.getTime());
-
-        return {
-          instructions: step.navigationInstruction.instructions,
-          distance: step.distanceMeters,
-          duration: step.staticDuration,
-          travelMode: step.travelMode,
-          time: formattedTime,
-        };
-      });
-
-      const endLocation = routeDetails.legs[0].endLocation.latLng;
-
-      setRouteDescription(stepsDescription);
-
-      setEndLocation({
-        latitude: endLocation.latitude,
-        longitude: endLocation.longitude,
-      });
-
-      setRouteSteps(steps);
-      setMapRegion({
-        latitude: endLocation.latitude,
-        longitude: endLocation.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      });
-
-      setMapRegion(getRegionPositionAfterRoute(steps));
+      initRoutes();
     }
   }, [params]);
 
