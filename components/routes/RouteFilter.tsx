@@ -84,7 +84,7 @@ export default function RouteFilter({
             Location
           </Text>
           <GooglePlacesAutocomplete
-            placeholder="Search your departure point"
+            placeholder="Search your starting point"
             fetchDetails={true}
             disableScroll={true}
             onPress={(data, details: any) => {
@@ -97,6 +97,18 @@ export default function RouteFilter({
                 startLocationName: data.description,
               }));
             }}
+            renderLeftButton={() => {
+              return (
+                <FontAwesome5
+                  name="search"
+                  size={24}
+                  color={"#616161"}
+                  style={{
+                    marginVertical: 15,
+                  }}
+                />
+              );
+            }}
             query={{
               key: process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
               language: "id",
@@ -105,6 +117,10 @@ export default function RouteFilter({
               container: styles.autoCompleteContainer,
               textInput: styles.autoCompleteInput,
               listView: styles.autoCompleteListView,
+              textInputContainer: {
+                paddingRight: 10,
+                paddingLeft: 20,
+              },
             }}
           />
         </View>
@@ -124,19 +140,31 @@ export default function RouteFilter({
             Destination
           </Text>
           <GooglePlacesAutocomplete
-            placeholder="Where do you want to go?"
+            placeholder="Search your departure point"
+            fetchDetails={true}
+            disableScroll={true}
             onPress={(data, details: any) => {
               setFilters((prev) => ({
                 ...prev,
-                end: {
+                start: {
                   latitude: details?.geometry.location.lat,
                   longitude: details?.geometry.location.lng,
                 },
-                endLocationName: data.description,
+                startLocationName: data.description,
               }));
             }}
-            fetchDetails={true}
-            disableScroll={true}
+            renderLeftButton={() => {
+              return (
+                <FontAwesome5
+                  name="search"
+                  size={24}
+                  color={"#616161"}
+                  style={{
+                    marginVertical: 15,
+                  }}
+                />
+              );
+            }}
             query={{
               key: process.env.EXPO_PUBLIC_GOOGLE_MAP_API_KEY,
               language: "id",
@@ -145,6 +173,10 @@ export default function RouteFilter({
               container: styles.autoCompleteContainer,
               textInput: styles.autoCompleteInput,
               listView: styles.autoCompleteListView,
+              textInputContainer: {
+                paddingRight: 10,
+                paddingLeft: 20,
+              },
             }}
           />
         </View>
@@ -166,7 +198,7 @@ export default function RouteFilter({
                 gap: 10,
                 backgroundColor: mainColor,
                 borderRadius: 30,
-                paddingHorizontal: 20,
+                paddingHorizontal: 13,
                 paddingVertical: 8,
               }}
             >
@@ -205,7 +237,7 @@ export default function RouteFilter({
                 gap: 10,
                 backgroundColor: mainColor,
                 borderRadius: 30,
-                paddingHorizontal: 20,
+                paddingHorizontal: 13,
                 paddingVertical: 8,
               }}
             >
@@ -290,13 +322,14 @@ export const styles = StyleSheet.create({
   autoCompleteContainer: {
     marginTop: 10,
     width: "100%",
+    borderWidth: 1,
+    borderRadius: 30,
   },
   autoCompleteInput: {
     height: 56,
+    fontSize: 14,
+    paddingHorizontal: 20,
     borderRadius: 30,
-    fontSize: 16,
-    borderWidth: 1,
-    paddingHorizontal: 35,
   },
   autoCompleteListView: {
     borderRadius: 10,
