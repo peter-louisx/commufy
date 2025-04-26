@@ -257,6 +257,8 @@ export default function MuRoute() {
             style={styles.findRouteButton}
             onPress={() => {
               const selectedRouteDetails = routeStepsOverview[selectedRoute];
+              setSelectedRoute(-1);
+              setRouteStepsOverview([]);
               router.push({
                 pathname: "/travel" as any,
                 params: {
