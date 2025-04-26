@@ -146,11 +146,11 @@ export default function RouteFilter({
             onPress={(data, details: any) => {
               setFilters((prev) => ({
                 ...prev,
-                start: {
+                end: {
                   latitude: details?.geometry.location.lat,
                   longitude: details?.geometry.location.lng,
                 },
-                startLocationName: data.description,
+                endLocationName: data.description,
               }));
             }}
             renderLeftButton={() => {

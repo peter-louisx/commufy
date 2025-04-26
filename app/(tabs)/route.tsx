@@ -3,13 +3,8 @@ import {
   StyleSheet,
   View,
   Text,
-  Image,
   TouchableOpacity,
-  FlatList,
-  SafeAreaView,
   StatusBar,
-  TextInput,
-  Modal,
   ScrollView,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -46,6 +41,7 @@ export default function MuRoute() {
   >([]);
 
   const [selectedRoute, setSelectedRoute] = useState<number>(-1);
+  const [loadingRoutes, setLoadingRoutes] = useState<boolean>(false);
 
   const calculateStepsIndex = (
     startIndex: number,
@@ -72,6 +68,7 @@ export default function MuRoute() {
     date: string;
     time: string;
   }) => {
+    setLoadingRoutes(true);
     await GoogleAPI.getTargetRouteDetails(
       filters.destination,
       filters.origin.latitude,
@@ -80,6 +77,8 @@ export default function MuRoute() {
       filters.time
     )
       .then((res) => {
+        setSelectedRoute(-1);
+
         const {
           routes,
         }: {
@@ -111,6 +110,9 @@ export default function MuRoute() {
       })
       .catch((err) => {
         showErrorToast("Error fetching routes. Please try again later.");
+      })
+      .finally(() => {
+        setLoadingRoutes(false);
       });
   };
 
@@ -143,135 +145,157 @@ export default function MuRoute() {
         </View>
 
         <View>
-          <Text style={{ fontSize: 18, fontWeight: "bold", padding: 16 }}>
-            Recommendation
-          </Text>
-
-          {routeStepsOverview.length > 0 && (
-            <View style={{ paddingHorizontal: 16 }}>
-              {routeStepsOverview.map((route, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    setSelectedRoute(index);
-                  }}
-                  activeOpacity={0.8}
-                  style={[
-                    styles.routeCard,
-                    {
-                      backgroundColor:
-                        selectedRoute == index ? "#AFCAF7" : "white",
-                    },
-                  ]}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 8,
+          {!loadingRoutes && routeStepsOverview.length > 0 && (
+            <>
+              <Text style={{ fontSize: 18, fontWeight: "bold", padding: 16 }}>
+                Recommendation
+              </Text>
+              <View style={{ paddingHorizontal: 16 }}>
+                {routeStepsOverview.map((route, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      setSelectedRoute(index);
                     }}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.routeCard,
+                      {
+                        backgroundColor:
+                          selectedRoute == index ? "#AFCAF7" : "white",
+                      },
+                    ]}
                   >
-                    <FontAwesome5
-                      name="map-marker-alt"
-                      size={24}
-                      color="#007bff"
-                      style={{
-                        marginBottom: 8,
-                        position: "relative",
-                        left: -8,
-                      }}
-                    />
-                    <Text
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: 12,
-                        color: "white",
-                        backgroundColor: mainColor,
-                        padding: 8,
-                        borderRadius: 20,
-                      }}
-                    >
-                      {route.totalTime}
-                    </Text>
-                  </View>
-                  {route.overviewSteps.map((step, stepIndex) => (
                     <View
-                      key={stepIndex}
                       style={{
-                        borderLeftWidth: 2,
-                        borderLeftColor: mainColor,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 8,
                       }}
                     >
-                      <View
+                      <FontAwesome5
+                        name="map-marker-alt"
+                        size={24}
+                        color="#007bff"
                         style={{
-                          width: 15,
-                          height: 15,
-                          borderRadius: 30,
-                          backgroundColor: mainColor,
+                          marginBottom: 8,
                           position: "relative",
-                          top: -5,
                           left: -8,
                         }}
-                      ></View>
+                      />
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          fontSize: 12,
+                          color: "white",
+                          backgroundColor: mainColor,
+                          padding: 8,
+                          borderRadius: 20,
+                        }}
+                      >
+                        {route.totalTime}
+                      </Text>
+                    </View>
+                    {route.overviewSteps.map((step, stepIndex) => (
                       <View
                         key={stepIndex}
                         style={{
-                          borderBottomWidth:
-                            stepIndex != route.overviewSteps.length - 1 ? 1 : 0,
-                          borderBottomColor: "#BDBDBD",
-                          paddingVertical: 16,
-                          flexDirection: "row",
-                          alignItems: "center",
-                          paddingLeft: 16,
-                          gap: 20,
+                          borderLeftWidth: 2,
+                          borderLeftColor: mainColor,
                         }}
                       >
                         <View
                           style={{
+                            width: 15,
+                            height: 15,
+                            borderRadius: 30,
                             backgroundColor: mainColor,
-                            padding: 12,
-                            minWidth: 50,
-                            maxWidth: 50,
-                            borderRadius: 10,
+                            position: "relative",
+                            top: -5,
+                            left: -8,
+                          }}
+                        ></View>
+                        <View
+                          key={stepIndex}
+                          style={{
+                            borderBottomWidth:
+                              stepIndex != route.overviewSteps.length - 1
+                                ? 1
+                                : 0,
+                            borderBottomColor: "#BDBDBD",
+                            paddingVertical: 16,
                             flexDirection: "row",
-                            justifyContent: "center",
+                            alignItems: "center",
+                            paddingLeft: 16,
+                            gap: 20,
                           }}
                         >
-                          <FontAwesome5
-                            name={
-                              step.travelMode === "TRANSIT" ? "bus" : "walking"
-                            }
-                            size={24}
-                            color="white"
-                          />
-                        </View>
-                        <View>
-                          <Text
+                          <View
                             style={{
-                              fontSize: 16,
-                              fontWeight: "bold",
-                              color: "black",
+                              backgroundColor: mainColor,
+                              padding: 12,
+                              minWidth: 50,
+                              maxWidth: 50,
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              justifyContent: "center",
                             }}
                           >
-                            {step.travelMode === "TRANSIT"
-                              ? "Public Transport"
-                              : "Walking"}
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              marginTop: 4,
-                            }}
-                          >
-                            {convertSecondIntoMinute(parseInt(step.totalTime))}
-                          </Text>
+                            <FontAwesome5
+                              name={
+                                step.travelMode === "TRANSIT"
+                                  ? "bus"
+                                  : "walking"
+                              }
+                              size={24}
+                              color="white"
+                            />
+                          </View>
+                          <View>
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: "bold",
+                                color: "black",
+                              }}
+                            >
+                              {step.travelMode === "TRANSIT"
+                                ? "Public Transport"
+                                : "Walking"}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                marginTop: 4,
+                              }}
+                            >
+                              {convertSecondIntoMinute(
+                                parseInt(step.totalTime)
+                              )}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  ))}
-                </TouchableOpacity>
-              ))}
+                    ))}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+
+          {loadingRoutes && (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                height: 500,
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Loading routes...
+              </Text>
             </View>
           )}
         </View>
