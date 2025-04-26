@@ -9,7 +9,6 @@ import {
 import { Link } from "expo-router";
 import { mainColor } from "@/constants/Colors";
 import WeatherCard from "@/components/weather/WeatherCard";
-import { SearchBar } from "react-native-screens";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Icons from "@/components/icons";
 

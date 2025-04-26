@@ -8,14 +8,13 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 
 export default function Landing() {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    router.push("/(tabs)");
+    router.push("/login");
   };
 
   return (
