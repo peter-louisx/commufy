@@ -1,3 +1,5 @@
+import { Buffer } from "buffer";
+import "react-native-url-polyfill/auto";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   StyleSheet,
@@ -11,10 +13,13 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
-import { useTheme } from "@react-navigation/native";
-import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useTheme, useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { decode as base64ToArrayBuffer } from "base64-arraybuffer";
+import Spinner from "react-native-loading-spinner-overlay";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/context/AuthContext";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
@@ -31,9 +36,12 @@ export default function MyProfile() {
     mobile: "",
     age: "",
     gender: "",
+    weight: "",
+    height: "",
   });
-
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -54,9 +62,12 @@ export default function MyProfile() {
             name: data[0].username,
             email: session?.user.email ?? "",
             mobile: data[0].mobile,
-            age: data[0].age.toString(),
+            age: data[0].age?.toString() ?? "",
             gender: data[0].gender,
+            weight: data[0].weight?.toString() ?? "",
+            height: data[0].height?.toString() ?? "",
           });
+          setAvatarUrl(data[0].avatar_url);
         }
       });
   }, []);
@@ -70,6 +81,8 @@ export default function MyProfile() {
         mobile: formValues.mobile,
         age: formValues.age,
         gender: formValues.gender,
+        weight: formValues.weight,
+        height: formValues.height,
       })
       .then(({ error }) => {
         if (error) {
@@ -89,6 +102,54 @@ export default function MyProfile() {
     setFormValues((prevValues) => ({ ...prevValues, [field]: value }));
   };
 
+  const uploadImage = async () => {
+    try {
+      setUploading(true);
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        showErrorToast("Permission to access media library is required!");
+        return;
+      }
+      const picker = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+      if (picker.canceled) return;
+      const imageUri = picker.assets[0].uri;
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const buffer = Buffer.from(base64, "base64");
+      const ext = imageUri.split(".").pop();
+      const fileName = `${session?.user.id}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, buffer, {
+          upsert: true,
+          contentType: "image/jpeg",
+        });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      const publicUrl = data.publicUrl;
+
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("user_id", session?.user.id);
+      if (updErr) throw updErr;
+      setAvatarUrl(publicUrl);
+      showSuccessToast("Avatar updated successfully");
+    } catch (err) {
+      console.error(err);
+      showErrorToast("Error uploading image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: "#fff" }]}>
       <StatusBar barStyle="light-content" />
@@ -99,16 +160,27 @@ export default function MyProfile() {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={styles.headerTitle}>My Profilee</Text>
       </View>
 
-      <View style={[styles.bannerSection, { backgroundColor: colors.primary }]}>
+      <View style={styles.bannerSection}>
         <Image
-          source={require("@/assets/images/111.png")}
-          style={styles.bannerImage}
-          resizeMode="contain"
+          source={
+            avatarUrl ? { uri: avatarUrl } : require("@/assets/images/111.png")
+          }
+          style={[styles.image, { borderColor: colors.primary }]}
+          resizeMode="cover"
         />
         <Text style={styles.name}>{userData?.username}</Text>
+
+        <View style={styles.avatarSection}>
+          <TouchableOpacity
+            style={styles.changeAvatarButton}
+            onPress={uploadImage}
+          >
+            <Text style={styles.changeAvatarButtonText}>Change Avatar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.menuContainer}>
@@ -156,6 +228,30 @@ export default function MyProfile() {
           >
             <Text>{formValues.gender}</Text>
           </TouchableOpacity>
+        </View>
+        <View style={styles.separator} />
+
+        <View style={styles.menuItem}>
+          <Text style={styles.menuText}>Weight (kg)</Text>
+          <TextInput
+            style={styles.inputField}
+            value={formValues.weight}
+            onChangeText={(text) => handleInputChange("weight", text)}
+            placeholder="Enter your weight"
+            keyboardType="number-pad"
+          />
+        </View>
+        <View style={styles.separator} />
+
+        <View style={styles.menuItem}>
+          <Text style={styles.menuText}>Height (cm)</Text>
+          <TextInput
+            style={styles.inputField}
+            value={formValues.height}
+            onChangeText={(text) => handleInputChange("height", text)}
+            placeholder="Enter your height"
+            keyboardType="number-pad"
+          />
         </View>
         <View style={styles.separator} />
 
@@ -327,5 +423,27 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: "red",
+  },
+  avatarSection: {
+    marginTop: 12,
+    alignItems: "center",
+  },
+  changeAvatarButton: {
+    backgroundColor: "#7d7d7d",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  changeAvatarButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  image: {
+    borderRadius: 75,
+    width: 150,
+    height: 150,
+    borderWidth: 5,
   },
 });
