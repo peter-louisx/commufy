@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { View, Button, ScrollView } from "react-native";
+import { View, Button, ScrollView, Pressable } from "react-native";
 import ToastNotification from "../../components/toast/ToastNotification";
 import WeatherCard from "../../components/weather/WeatherCard";
-import { useGlobalSearchParams, useNavigation } from "expo-router";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useGlobalSearchParams, useRouter } from "expo-router";
 
 const ExampleScreen = () => {
   const [showToast, setShowToast] = useState(false);
+  const router = useRouter();
 
   const params = useGlobalSearchParams();
 
@@ -31,11 +31,13 @@ const ExampleScreen = () => {
       />
 
       <ScrollView style={{ marginTop: 20 }}>
-        <WeatherCard
-          temperature={28}
-          location="Bandung, Indonesia"
-          icon="sunny"
-        />
+        <Pressable onPress={() => router.navigate("/weather" as any)}>
+          <WeatherCard
+            temperature={28}
+            location="Bandung, Indonesia"
+            icon="sunny"
+          />
+        </Pressable>
       </ScrollView>
     </View>
   );

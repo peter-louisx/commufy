@@ -45,8 +45,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getCurrentLocation()
-      .then((location) => {
-        const { latitude, longitude } = location.coords;
+      .then((locationData) => {
+        const { latitude, longitude } = locationData.location.coords;
         GoogleAPI.getWeatherDetails(latitude, longitude).then((response) => {
           setWeatherInfo(response.data.forecastHours);
         });
