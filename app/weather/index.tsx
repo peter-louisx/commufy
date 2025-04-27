@@ -42,8 +42,30 @@ type WeatherInfo = {
 
 export default function HomeScreen() {
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo[]>([]);
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleString());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const updateWeatherInterval = setInterval(() => {
+      getCurrentLocation()
+        .then((locationData) => {
+          const { latitude, longitude } = locationData.location.coords;
+          GoogleAPI.getWeatherDetails(latitude, longitude).then((response) => {
+            setWeatherInfo(response.data.forecastHours);
+          });
+        })
+        .catch((error) => {
+          showErrorToast(error.message);
+        });
+    }, 600000);
+
     getCurrentLocation()
       .then((locationData) => {
         const { latitude, longitude } = locationData.location.coords;
@@ -54,7 +76,22 @@ export default function HomeScreen() {
       .catch((error) => {
         showErrorToast(error.message);
       });
+
+    return () => clearInterval(updateWeatherInterval);
   }, []);
+
+  const filteredWeatherInfo = weatherInfo.filter((info) => {
+    const currentTimeDate = new Date();
+    const oneHourLater = new Date(currentTimeDate.getTime() + 60 * 60 * 1000); //Perkiraan cuaca untuk satu jam ke depan, yang relevan selama perkiraan waktu perjalanan dari keberangkatan hingga tujuan.
+    const startTime = new Date(info.interval.startTime);
+    const endTime = new Date(info.interval.endTime);
+
+    return (
+      startTime <= oneHourLater &&
+      currentTimeDate <= endTime &&
+      currentTimeDate >= startTime
+    );
+  });
 
   return (
     <ParallaxScrollView
@@ -67,32 +104,23 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Testing Weather Information</ThemedText>
+        <ThemedText type="title">Weather Information</ThemedText>
         <HelloWave />
       </ThemedView>
 
-      {weatherInfo.map((info, index) => (
-        <ThemedView key={index} style={styles.stepContainer}>
-          <ThemedText type="subtitle">
-            {new Date(info.interval.startTime).toLocaleString()} -{" "}
-            {new Date(info.interval.endTime).toLocaleString()}
-          </ThemedText>
-          <ThemedText>
-            Condition: {info.weatherCondition.description.text}
-          </ThemedText>
-          <ThemedText>
-            Temperature: {info.temperature.degrees} {info.temperature.unit}
-          </ThemedText>
-          <ThemedText>Humidity: {info.relativeHumidity}%</ThemedText>
-          <ThemedText>UV Index: {info.uvIndex}</ThemedText>
-          <ThemedText>
-            Precipitation Probability: {info.precipitation.probability.percent}%
-          </ThemedText>
-          <ThemedText>
-            Thunderstorm Probability: {info.thunderstormProbability}%
-          </ThemedText>
-        </ThemedView>
-      ))}
+      <ThemedText type="subtitle">Current Time: {currentTime}</ThemedText>
+
+      {filteredWeatherInfo.length > 0 ? (
+        filteredWeatherInfo.map((info, index) => (
+          <ThemedView key={index} style={styles.stepContainer}>
+            <ThemedText type="subtitle">
+              Expected: {info.weatherCondition.description.text}
+            </ThemedText>
+          </ThemedView>
+        ))
+      ) : (
+        <ThemedText>No weather data available for the next hour.</ThemedText>
+      )}
     </ParallaxScrollView>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Button, ScrollView, Pressable } from "react-native";
+
+import { View, Button, ScrollView, Pressable, Text } from "react-native";
 import ToastNotification from "../../components/toast/ToastNotification";
 import WeatherCard from "../../components/weather/WeatherCard";
 import { useGlobalSearchParams, useRouter } from "expo-router";
@@ -38,6 +39,11 @@ const ExampleScreen = () => {
             icon="sunny"
           />
         </Pressable>
+        {/* <Pressable onPress={() => router.navigate("/weather" as any)}>
+          <Text style={{ color: "blue", marginTop: 20 }}>
+            Ke weather forecast
+          </Text>
+        </Pressable> */}
       </ScrollView>
     </View>
   );
