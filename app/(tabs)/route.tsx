@@ -20,11 +20,17 @@ import { mainColor } from "@/constants/Colors";
 import { convertSecondIntoMinute } from "@/utils/time";
 import { showErrorToast } from "@/utils/toast";
 
+type WeatherInfo = {
+  interval: { startTime: string; endTime: string };
+  weatherCondition: { description: { text: string; language: string } };
+};
+
 type RootStackParamList = {
   routeDetails: { routeDetails: string };
 };
 
 export default function MuRoute() {
+  const [expectedWeather, setExpectedWeather] = useState<string>("");
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { colors } = useTheme();
   const router = useRouter();
@@ -69,6 +75,30 @@ export default function MuRoute() {
     time: string;
   }) => {
     setLoadingRoutes(true);
+
+    {
+      /* For weather only */
+    }
+    GoogleAPI.getWeatherDetails(
+      filters.origin.latitude,
+      filters.origin.longitude
+    )
+      .then((res) => {
+        const when = new Date(`${filters.date}T${filters.time}`);
+        const hours: WeatherInfo[] = res.data.forecastHours;
+        const hit = hours.find((info) => {
+          const s = new Date(info.interval.startTime);
+          const e = new Date(info.interval.endTime);
+          return s <= when && when <= e;
+        });
+        setExpectedWeather(
+          hit
+            ? `Expected weather: ${hit.weatherCondition.description.text}`
+            : "Expected weather: data not available"
+        );
+      })
+      .catch((err) => showErrorToast(err.message));
+
     await GoogleAPI.getTargetRouteDetails(
       filters.destination,
       filters.origin.latitude,
@@ -145,6 +175,13 @@ export default function MuRoute() {
         </View>
 
         <View>
+          {/* {expectedWeather !== "" && (
+            <View style={{ padding: 16 }}>
+              <Text style={{ fontSize: 16, fontStyle: "italic" }}>
+                {expectedWeather}
+              </Text>
+            </View>
+          )} */}
           {!loadingRoutes && routeStepsOverview.length > 0 && (
             <>
               <Text style={{ fontSize: 18, fontWeight: "bold", padding: 16 }}>
@@ -179,6 +216,19 @@ export default function MuRoute() {
                       />
                       <Text style={styles.totalTime}>{route.totalTime}</Text>
                     </View>
+
+                    {/* For weather only */}
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontStyle: "italic",
+                        marginBottom: 8,
+                        color: "#555",
+                      }}
+                    >
+                      {expectedWeather}
+                    </Text>
+
                     {route.overviewSteps.map((step, stepIndex) => (
                       <View
                         key={stepIndex}
