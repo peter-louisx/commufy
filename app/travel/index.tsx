@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, Modal, Pressable, Image } from "react-native";
 import MapView, {
   LatLng,
   Region,
@@ -104,7 +104,7 @@ export default function Travel() {
     duration: string;
     transitFare: string;
   } | null>(null);
-
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [routeSteps, setRouteSteps] = useState<
     {
       latitude: number;
@@ -138,7 +138,7 @@ export default function Travel() {
     }));
   }, [routeSteps]);
 
-  const snapPoints = useMemo(() => ["15%", "25%", "50%", "90%"], []);
+  const snapPoints = useMemo(() => ["20%", "25%", "50%", "90%"], []);
 
   const renderItem = useCallback(
     (item: any, index: number) => (
@@ -299,6 +299,31 @@ export default function Travel() {
 
   return (
     <GestureHandlerRootView style={styles.sheetContainer}>
+      <View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Image
+                source={require("@/assets/images/dummy-qr-code.png")}
+                resizeMode="contain"
+              />
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
       <View
         style={{
           width: "100%",
@@ -401,6 +426,13 @@ export default function Travel() {
                     {generalRouteInfo.distance}
                   </Text>
 
+                  <Pressable
+                    style={[styles.button, styles.buttonOpen]}
+                    onPress={() => setModalVisible(true)}
+                  >
+                    <Text style={styles.textStyle}>Show QR</Text>
+                  </Pressable>
+
                   <Text
                     style={{
                       fontWeight: "bold",
@@ -459,5 +491,49 @@ const styles = StyleSheet.create({
   itemContainer: {
     padding: 6,
     paddingLeft: 18,
+  },
+
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    height: "100%",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: mainColor,
+  },
+  buttonClose: {
+    backgroundColor: mainColor,
+    paddingHorizontal: 20,
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });
