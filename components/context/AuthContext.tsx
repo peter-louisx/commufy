@@ -10,6 +10,7 @@ interface AuthContextProps {
   userData: {
     user_id: string;
     username: string;
+    avatarUrl?: string;
   } | null;
 }
 
@@ -22,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userData, setUserData] = useState<{
     user_id: string;
     username: string;
+    avatarUrl?: string;
   } | null>(null);
   const router = useRouter();
 
@@ -42,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setUserData({
                 user_id: data[0].user_id,
                 username: data[0].username,
+                avatarUrl: data[0].avatar_url,
               });
             }
           });

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useEffect } from "react";
+import React, { useLayoutEffect, useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -8,8 +8,6 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  TextInput,
-  Modal,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -22,6 +20,7 @@ export default function ProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { signOut, session, userData } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const navigation = useNavigation();
   useLayoutEffect(() => {
@@ -33,8 +32,10 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!session) {
       router.replace("/login" as any);
+    } else {
+      setAvatarUrl(userData?.avatarUrl ?? null);
     }
-  }, [session, router]);
+  }, [session, userData, router]);
 
   if (!session) {
     return null;
@@ -55,7 +56,9 @@ export default function ProfileScreen() {
 
       <View style={[styles.bannerSection, { backgroundColor: colors.primary }]}>
         <Image
-          source={require("@/assets/images/111.png")}
+          source={
+            avatarUrl ? { uri: avatarUrl } : require("@/assets/images/111.png")
+          }
           style={styles.bannerImage}
           resizeMode="contain"
         />
@@ -138,6 +141,9 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 12,
+    borderRadius: 75,
+    borderWidth: 5,
+    borderColor: "#fff",
   },
   name: {
     fontSize: 20,
