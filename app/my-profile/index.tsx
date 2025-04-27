@@ -151,24 +151,24 @@ export default function MyProfile() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: "#fff" }]}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.topMargin, { backgroundColor: "#007bff" }]}></View>
 
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <View style={[styles.header, { backgroundColor: "#007bff" }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profilee</Text>
       </View>
 
-      <View style={styles.bannerSection}>
+      <View style={[styles.bannerSection, { backgroundColor: "#007bff" }]}>
         <Image
           source={
             avatarUrl ? { uri: avatarUrl } : require("@/assets/images/111.png")
           }
-          style={[styles.image, { borderColor: colors.primary }]}
+          style={[styles.image, { borderColor: "#007bff" }]}
           resizeMode="cover"
         />
         <Text style={styles.name}>{userData?.username}</Text>
@@ -267,9 +267,11 @@ export default function MyProfile() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Save</Text>
-      </TouchableOpacity>
+      <View style={{ backgroundColor: "#fff", paddingBottom: 20 }}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
 
       <Modal
         animationType="slide"
