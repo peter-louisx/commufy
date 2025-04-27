@@ -67,8 +67,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setSession(null);
-    setUserData(null);
+    // setSession(null);
+    // setUserData(null);
     router.push("/login-form" as any);
   };
 
