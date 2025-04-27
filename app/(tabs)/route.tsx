@@ -17,17 +17,35 @@ import { GoogleAPI } from "@/api/google";
 import { Route } from "../travel";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { mainColor } from "@/constants/Colors";
-import { convertSecondIntoMinute } from "@/utils/time";
+import { convertDateToString, convertSecondIntoMinute, convertTimeToString } from "@/utils/time";
 import { showErrorToast } from "@/utils/toast";
 
 type RootStackParamList = {
   routeDetails: { routeDetails: string };
 };
 
+type RouteFilterProps = {
+  start: LatLng;
+  startLocationName: string;
+  end: LatLng;
+  endLocationName: string;
+  date: string;
+  time: string;
+};
+
 export default function MuRoute() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { colors } = useTheme();
   const router = useRouter();
+
+  const [filters, setFilters] = useState<RouteFilterProps>({
+    start: { latitude: 0, longitude: 0 },
+    end: { latitude: 0, longitude: 0 },
+    startLocationName: "",
+    endLocationName: "",
+    date: convertDateToString(new Date()),
+    time: convertTimeToString(new Date()),
+  });
 
   const [routeStepsOverview, setRouteStepsOverview] = useState<
     {
@@ -141,7 +159,11 @@ export default function MuRoute() {
             <Text style={styles.headerTitle}>MuRoute</Text>
           </View>
 
-          <RouteFilter fetchRoutes={fetchRoutes} />
+          <RouteFilter
+            fetchRoutes={fetchRoutes}
+            filters={filters}
+            setFilters={setFilters}
+          />
         </View>
 
         <View>
@@ -260,10 +282,14 @@ export default function MuRoute() {
               setSelectedRoute(-1);
               setRouteStepsOverview([]);
               router.push({
-                pathname: "/travel" as any,
+                pathname: "/payment",
                 params: {
                   routeDetails: JSON.stringify(
                     selectedRouteDetails.fullRouteInfo
+                  ),
+                  filters: JSON.stringify(filters),
+                  overviewSteps: JSON.stringify(
+                    selectedRouteDetails.overviewSteps
                   ),
                 },
               });
