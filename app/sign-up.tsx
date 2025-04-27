@@ -23,7 +23,6 @@ export default function Auth() {
     });
 
     if (error) {
-      console.log(error);
       showErrorToast(
         "Sign up failed, Please check your email and password again!"
       );
@@ -48,7 +47,7 @@ export default function Auth() {
           leftIcon={{ type: "font-awesome", name: "envelope" }}
           onChangeText={(text) => setEmail(text)}
           value={email}
-          placeholder="email@address.com"
+          placeholder="Enter your email"
           autoCapitalize={"none"}
         />
       </View>
@@ -59,7 +58,7 @@ export default function Auth() {
           onChangeText={(text) => setPassword(text)}
           value={password}
           secureTextEntry={true}
-          placeholder="Password"
+          placeholder="Enter your password"
           autoCapitalize={"none"}
         />
       </View>

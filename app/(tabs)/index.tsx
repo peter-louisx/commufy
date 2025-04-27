@@ -11,8 +11,12 @@ import { mainColor } from "@/constants/Colors";
 import WeatherCard from "@/components/weather/WeatherCard";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Icons from "@/components/icons";
+import { useAuth } from "@/components/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 export default function HomeScreen() {
+  const { session, userData } = useAuth();
+
   return (
     <ScrollView style={{ backgroundColor: "white" }}>
       <View
@@ -36,14 +40,17 @@ export default function HomeScreen() {
             }}
           >
             <View>
-              <Text
-                style={{
-                  color: "white",
-                  fontSize: 16,
-                }}
-              >
-                John Doe
-              </Text>
+              {session && userData && (
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 16,
+                  }}
+                >
+                  {userData.username}
+                </Text>
+              )}
+
               <Text
                 style={{
                   color: "white",

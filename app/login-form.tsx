@@ -23,10 +23,10 @@ export default function Auth() {
       showErrorToast(
         "Sign in failed, Please check your email and password again!"
       );
-      return;
+    } else {
+      router.push("(tabs)" as any);
     }
 
-    router.push("(tabs)" as any);
     setLoading(false);
   }
 
@@ -42,7 +42,7 @@ export default function Auth() {
           leftIcon={{ type: "font-awesome", name: "envelope" }}
           onChangeText={(text) => setEmail(text)}
           value={email}
-          placeholder="email@address.com"
+          placeholder="Enter your email"
           autoCapitalize={"none"}
         />
       </View>
@@ -53,7 +53,7 @@ export default function Auth() {
           onChangeText={(text) => setPassword(text)}
           value={password}
           secureTextEntry={true}
-          placeholder="Password"
+          placeholder="Enter your password"
           autoCapitalize={"none"}
         />
       </View>

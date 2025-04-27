@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -21,7 +21,7 @@ import { useAuth } from "@/components/context/AuthContext";
 export default function ProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, session, userData } = useAuth();
 
   const navigation = useNavigation();
   useLayoutEffect(() => {
@@ -29,6 +29,16 @@ export default function ProfileScreen() {
       headerShown: false,
     });
   }, [navigation]);
+
+  useEffect(() => {
+    if (!session) {
+      router.replace("/login" as any);
+    }
+  }, [session, router]);
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: "#fff" }]}>
@@ -49,7 +59,7 @@ export default function ProfileScreen() {
           style={styles.bannerImage}
           resizeMode="contain"
         />
-        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.name}>{userData?.username}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.menuContainer}>

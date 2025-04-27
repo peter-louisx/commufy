@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -15,17 +15,22 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
 import { useTheme } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/context/AuthContext";
+import { showErrorToast, showSuccessToast } from "@/utils/toast";
 
 export default function MyProfile() {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
+  const { session, userData } = useAuth();
+
   const [formValues, setFormValues] = useState({
-    name: "John Doe",
-    email: "youremail@gmail.com",
-    mobile: "+62 123 4567 8910",
-    age: "24",
-    gender: "Female",
+    name: "",
+    email: session?.user.email ?? "",
+    mobile: "",
+    age: "",
+    gender: "",
   });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -36,19 +41,43 @@ export default function MyProfile() {
     });
   }, [navigation]);
 
-  const handleSave = () => {
-    console.log("Profile saved", formValues);
-    // generated api//
-    // fetch('api url', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(formValues),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => console.log(data))
-    //   .catch(error => console.error('Error:', error));
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", session?.user.id)
+      .then(({ data, error }) => {
+        if (error) {
+          showErrorToast("Error fetching user data");
+        } else if (data && data.length > 0) {
+          setFormValues({
+            name: data[0].username,
+            email: session?.user.email ?? "",
+            mobile: data[0].mobile,
+            age: data[0].age.toString(),
+            gender: data[0].gender,
+          });
+        }
+      });
+  }, []);
+
+  const handleSave = async () => {
+    await supabase
+      .from("profiles")
+      .upsert({
+        user_id: session?.user.id,
+        username: formValues.name,
+        mobile: formValues.mobile,
+        age: formValues.age,
+        gender: formValues.gender,
+      })
+      .then(({ error }) => {
+        if (error) {
+          showErrorToast("Error updating user data");
+        } else {
+          showSuccessToast("User data updated successfully");
+        }
+      });
   };
 
   const handleGenderSelect = (selectedGender: "Male" | "Female") => {
@@ -79,7 +108,7 @@ export default function MyProfile() {
           style={styles.bannerImage}
           resizeMode="contain"
         />
-        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.name}>{userData?.username}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.menuContainer}>

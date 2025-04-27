@@ -7,6 +7,10 @@ interface AuthContextProps {
   session: Session | null;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<any>;
+  userData: {
+    user_id: string;
+    username: string;
+  } | null;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -15,12 +19,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [userData, setUserData] = useState<{
+    user_id: string;
+    username: string;
+  } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Session from getSession:", session);
       setSession(session);
+
+      if (session) {
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error fetching user data:", error);
+            } else if (data && data.length > 0) {
+              console.log("User data:", data[0]);
+              setUserData({
+                user_id: data[0].user_id,
+                username: data[0].username,
+              });
+            }
+          });
+      }
     });
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -43,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ session, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, userData, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
