@@ -15,20 +15,38 @@ export default function Auth() {
   async function signUpWithEmail() {
     setLoading(true);
     const {
-      data: { session },
-      error,
+      data: { user },
+      error: signUpError,
     } = await supabase.auth.signUp({
       email: email,
       password: password,
     });
 
-    if (error) {
+    if (signUpError) {
       showErrorToast(
         "Sign up failed, Please check your email and password again!"
       );
+      setLoading(false);
+      return;
     }
 
-    if (session) {
+    if (user) {
+      const { error: profileError } = await supabase.from("profiles").insert([
+        {
+          user_id: user.id,
+          username: email.split("@")[0],
+          avatar_url: null,
+        },
+      ]);
+
+      if (profileError) {
+        showErrorToast("Failed to create profile!");
+        setLoading(false);
+        return;
+      }
+
+      showSuccessToast("Sign up successful!");
+
       router.push("(tabs)" as any);
     }
 

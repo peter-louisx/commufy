@@ -15,6 +15,7 @@ import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/components/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -33,7 +34,23 @@ export default function ProfileScreen() {
     if (!session) {
       router.replace("/login" as any);
     } else {
-      setAvatarUrl(userData?.avatarUrl ?? null);
+      if (session.user?.id) {
+        supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("user_id", session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error fetching avatar URL:", error);
+              setAvatarUrl(null);
+            } else if (data && data.avatar_url) {
+              setAvatarUrl(data.avatar_url);
+            } else {
+              setAvatarUrl(null);
+            }
+          });
+      }
     }
   }, [session, userData, router]);
 
