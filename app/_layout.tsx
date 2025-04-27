@@ -58,6 +58,18 @@ export default function RootLayout() {
               headerShown: false,
             }}
           />
+          <Stack.Screen
+            name="payment/index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="universal-qr/index"
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
         <Toast />
