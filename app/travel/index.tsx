@@ -27,6 +27,8 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { convertSecondIntoMinute } from "@/utils/time";
 import { mainColor } from "@/constants/Colors";
 import { AIAPI } from "@/api/ai";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/context/AuthContext";
 
 export type Route = {
   legs: {
@@ -98,6 +100,7 @@ export type Route = {
 };
 
 export default function Travel() {
+  const { session } = useAuth();
   const [endLocation, setEndLocation] = useState<LatLng | null>(null);
   const [generalRouteInfo, setGeneralRouteInfo] = useState<{
     distance: string;
@@ -211,24 +214,55 @@ export default function Travel() {
     };
   };
 
+  const validUserProfile = (userProfile: any) => {
+    if (
+      userProfile.age &&
+      userProfile.weight &&
+      userProfile.height &&
+      userProfile.gender
+    ) {
+      return {
+        age: userProfile.age,
+        weight: userProfile.weight,
+        height: userProfile.height,
+        sex: userProfile.gender == "Male" ? "M" : "F",
+        speed: 1.4,
+      };
+    } else {
+      return null;
+    }
+  };
+
   const initRoutes = async () => {
     const routeDetails = JSON.parse(params.routeDetails as string) as Route;
+    let userProfile = null;
+    let walkingSpeed = null;
 
-    const walkingSpeed = await AIAPI.predictTime({
-      age: 25,
-      weight: 70,
-      height: 175,
-      speed: 1.4,
-      sex: "M",
-    }).then((res) => {
-      console.log("Walking speed prediction:", res.data.prediction);
-      return Math.floor(res.data.prediction);
-    });
+    if (session) {
+      const fetchUserProfile = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .then(({ data, error }) => {
+          if (error) {
+          } else if (data && data.length > 0) {
+            return data[0];
+          }
+        });
+
+      userProfile = validUserProfile(fetchUserProfile);
+    }
+
+    if (userProfile) {
+      walkingSpeed = await AIAPI.predictTime(userProfile).then((res) => {
+        return Math.floor(res.data.prediction);
+      });
+    }
 
     const steps = routeDetails.legs[0].steps.map((step) => {
       const decodedPolyline = polyline.decode(step.polyline.encodedPolyline);
       const adjustedDuration =
-        step.travelMode === "WALK" && walkingSpeed > 0
+        step.travelMode === "WALK" && walkingSpeed && walkingSpeed > 0
           ? (step.distanceMeters / 100) * walkingSpeed
           : step.staticDuration;
 
@@ -238,7 +272,7 @@ export default function Travel() {
         travelMode: step.travelMode,
         instructions: step.navigationInstruction.instructions,
         distance: step.distanceMeters,
-        duration: adjustedDuration,
+        duration: session ? adjustedDuration : step.staticDuration,
       }));
     });
 
