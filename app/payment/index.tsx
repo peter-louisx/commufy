@@ -1,6 +1,7 @@
 import RouteFilter, { RouteFilterProps } from "@/components/routes/RouteFilter";
 import { mainColor } from "@/constants/Colors";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import SwipeButton from "rn-swipe-button";
 import {
   NavigationProp,
   useNavigation,
@@ -113,27 +114,48 @@ export default function Payment() {
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  marginTop: 10,
                 }}
               >
-                <Text>Distance</Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Distance
+                </Text>
                 <Text>{routeDetails.localizedValues.distance.text}</Text>
               </View>
               <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  marginTop: 10,
                 }}
               >
-                <Text>Duration</Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Duration
+                </Text>
                 <Text>{routeDetails.localizedValues.duration.text}</Text>
               </View>
               <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  marginTop: 10,
                 }}
               >
-                <Text>From</Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  From
+                </Text>
                 <Text
                   style={{
                     textAlign: "right",
@@ -147,9 +169,16 @@ export default function Payment() {
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  marginTop: 10,
                 }}
               >
-                <Text>To</Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  To
+                </Text>
                 <Text
                   style={{
                     textAlign: "right",
@@ -163,9 +192,16 @@ export default function Payment() {
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  marginTop: 10,
                 }}
               >
-                <Text>Time</Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Time
+                </Text>
                 <Text>
                   {filters.time} {filters.date}
                 </Text>
@@ -187,7 +223,7 @@ export default function Payment() {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: 28,
                     fontWeight: "bold",
                   }}
                 >
@@ -200,7 +236,7 @@ export default function Payment() {
           </View>
         </View>
 
-        <View
+        {/* <View
           style={{
             paddingHorizontal: 20,
             position: "relative",
@@ -280,7 +316,7 @@ export default function Payment() {
               ))}
             </View>
           </View>
-        </View>
+        </View> */}
 
         <View
           style={{
@@ -439,14 +475,9 @@ export default function Payment() {
             )}
           </>
         )}
-        <TouchableOpacity
-          style={{
-            backgroundColor: mainColor,
-            paddingVertical: 16,
-            borderRadius: 30,
-            alignItems: "center",
-          }}
-          onPress={() => {
+        <SwipeButton
+          title="Swipe to pay"
+          onSwipeSuccess={() => {
             router.replace({
               pathname: "/universal-qr",
               params: {
@@ -454,17 +485,12 @@ export default function Payment() {
               },
             });
           }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-          >
-            Pay
-          </Text>
-        </TouchableOpacity>
+          railBorderColor="white"
+          railBackgroundColor={mainColor}
+          titleColor="white"
+          thumbIconBackgroundColor="white"
+          railFillBackgroundColor="white"
+        />
       </View>
     </>
   );
