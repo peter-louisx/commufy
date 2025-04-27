@@ -13,9 +13,40 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import Icons from "@/components/icons";
 import { useAuth } from "@/components/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+import { showErrorToast } from "@/utils/toast";
 
 export default function HomeScreen() {
   const { session, userData } = useAuth();
+
+  const [travelHistory, setTravelHistory] = useState<
+    {
+      destination: string;
+      origin: string;
+      departured_at: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchTravelHistory = async () => {
+      if (session) {
+        const { data, error } = await supabase
+          .from("travel_history")
+          .select("*")
+          .eq("user_id", session.user.id);
+
+        if (error) {
+          showErrorToast(
+            "Failed to fetch travel history. Please try again later."
+          );
+        } else {
+          setTravelHistory(data);
+        }
+      }
+    };
+
+    fetchTravelHistory();
+  }, []);
 
   return (
     <ScrollView style={{ backgroundColor: "white" }}>
@@ -205,32 +236,73 @@ export default function HomeScreen() {
         >
           Your History
         </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
-        >
+        {travelHistory.length > 0 ? (
+          travelHistory.map((history, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: 16,
+                borderWidth: 1,
+                borderColor: "#ddd",
+                borderRadius: 8,
+                marginBottom: 8,
+              }}
+            >
+              <View>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "bold",
+                    color: "#11181C",
+                  }}
+                >
+                  {`${history.origin.slice(
+                    0,
+                    15
+                  )}... → ${history.destination.slice(0, 15)}..`}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: "#616161",
+                  }}
+                >
+                  {history.departured_at}
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
           <View
             style={{
               flexDirection: "row",
+              justifyContent: "center",
               alignItems: "center",
-              gap: 16,
+              padding: 16,
             }}
           >
-            <Text
+            <View
               style={{
-                textAlign: "center",
-                color: mainColor,
-                fontSize: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
               }}
             >
-              No history yet
-            </Text>
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: mainColor,
+                  fontSize: 16,
+                }}
+              >
+                No history yet
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </ScrollView>
   );
