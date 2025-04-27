@@ -21,6 +21,9 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import { LatLng } from "react-native-maps";
 import { Route } from "../travel";
 import { convertSecondIntoMinute } from "@/utils/time";
+import { useAuth } from "@/components/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast } from "@/utils/toast";
 
 type OverviewStep = {
   totalTime: string;
@@ -59,6 +62,8 @@ export default function Payment() {
   const { colors } = useTheme();
   const router = useRouter();
 
+  const { session } = useAuth();
+
   const routeDetails = JSON.parse(params.routeDetails as string) as Route;
   const filters = JSON.parse(params.filters as string) as RouteFilterProps;
   const overviewSteps = JSON.parse(
@@ -67,6 +72,38 @@ export default function Payment() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("qris");
   const [showDetails, setShowDetails] = useState<boolean>(false);
+
+  const completePayment = () => {
+    if (session) {
+      supabase
+        .from("travel_history")
+        .insert({
+          origin: filters.startLocationName,
+          destination: filters.endLocationName,
+          departured_at: filters.date,
+          user_id: session.user.id,
+        })
+        .then(({ data, error }) => {
+          if (error) {
+            showErrorToast("Payment failed. Please try again.");
+            return;
+          }
+          router.replace({
+            pathname: "/universal-qr",
+            params: {
+              routeDetails: JSON.stringify(routeDetails),
+            },
+          });
+        });
+    } else {
+      router.replace({
+        pathname: "/universal-qr",
+        params: {
+          routeDetails: JSON.stringify(routeDetails),
+        },
+      });
+    }
+  };
 
   return (
     <>
@@ -478,12 +515,7 @@ export default function Payment() {
         <SwipeButton
           title="Swipe to pay"
           onSwipeSuccess={() => {
-            router.replace({
-              pathname: "/universal-qr",
-              params: {
-                routeDetails: JSON.stringify(routeDetails),
-              },
-            });
+            completePayment();
           }}
           railBorderColor="white"
           railBackgroundColor={mainColor}
