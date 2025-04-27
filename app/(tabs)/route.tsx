@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
   ScrollView,
+  Image,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useTheme } from "@react-navigation/native";
@@ -17,12 +18,19 @@ import { GoogleAPI } from "@/api/google";
 import { Route } from "../travel";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { mainColor } from "@/constants/Colors";
-import { convertDateToString, convertSecondIntoMinute, convertTimeToString } from "@/utils/time";
+import {
+  convertDateToString,
+  convertSecondIntoMinute,
+  convertTimeToString,
+} from "@/utils/time";
 import { showErrorToast } from "@/utils/toast";
 
 type WeatherInfo = {
   interval: { startTime: string; endTime: string };
-  weatherCondition: { description: { text: string; language: string } };
+  weatherCondition: {
+    description: { text: string; language: string };
+    iconBaseUri: string;
+  };
 };
 
 type RootStackParamList = {
@@ -109,6 +117,7 @@ export default function MuRoute() {
           const e = new Date(info.interval.endTime);
           return s <= when && when <= e;
         });
+        console.log(hit?.weatherCondition.iconBaseUri);
         setExpectedWeather(
           hit
             ? `Expected weather: ${hit.weatherCondition.description.text}`
@@ -204,114 +213,122 @@ export default function MuRoute() {
               </Text>
             </View>
           )} */}
-          {!loadingRoutes && routeStepsOverview.length > 0 && (
-            <>
-              <Text style={{ fontSize: 18, fontWeight: "bold", padding: 16 }}>
-                Recommendation
-              </Text>
-              <View style={{ paddingHorizontal: 16 }}>
-                {routeStepsOverview.map((route, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      setSelectedRoute(index);
-                    }}
-                    activeOpacity={0.8}
-                    style={[
-                      styles.routeCard,
-                      {
-                        backgroundColor:
-                          selectedRoute == index ? "#AFCAF7" : "white",
-                      },
-                    ]}
-                  >
-                    <View style={styles.routeInfo}>
-                      <FontAwesome5
-                        name="map-marker-alt"
-                        size={24}
-                        color="#007bff"
-                        style={{
-                          marginBottom: 8,
-                          position: "relative",
-                          left: -8,
-                        }}
-                      />
-                      <Text style={styles.totalTime}>{route.totalTime}</Text>
-                    </View>
-
-                    {/* For weather only */}
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontStyle: "italic",
-                        marginBottom: 8,
-                        color: "#555",
+          {!loadingRoutes &&
+            routeStepsOverview.length > 0 &&
+            expectedWeather && (
+              <>
+                <Text style={{ fontSize: 18, fontWeight: "bold", padding: 16 }}>
+                  Recommendation
+                </Text>
+                <View style={{ paddingHorizontal: 16 }}>
+                  {routeStepsOverview.map((route, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => {
+                        setSelectedRoute(index);
                       }}
+                      activeOpacity={0.8}
+                      style={[
+                        styles.routeCard,
+                        {
+                          backgroundColor:
+                            selectedRoute == index ? "#AFCAF7" : "white",
+                        },
+                      ]}
                     >
-                      {expectedWeather}
-                    </Text>
+                      <View style={styles.routeInfo}>
+                        <FontAwesome5
+                          name="map-marker-alt"
+                          size={24}
+                          color="#007bff"
+                          style={{
+                            marginBottom: 8,
+                            position: "relative",
+                            left: -8,
+                          }}
+                        />
+                        <Text style={styles.totalTime}>{route.totalTime}</Text>
+                      </View>
 
-                    {route.overviewSteps.map((step, stepIndex) => (
+                      {/* For weather only */}
+
                       <View
-                        key={stepIndex}
                         style={{
-                          borderLeftWidth: 2,
-                          borderLeftColor: mainColor,
+                          paddingVertical: 12,
                         }}
                       >
-                        <View style={styles.routeCircle}></View>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontStyle: "italic",
+                            color: "#555",
+                          }}
+                        >
+                          {expectedWeather}
+                        </Text>
+                      </View>
+
+                      {route.overviewSteps.map((step, stepIndex) => (
                         <View
                           key={stepIndex}
-                          style={[
-                            styles.routeInfoContainer,
-                            {
-                              backgroundColor:
-                                selectedRoute == index ? "#AFCAF7" : "white",
-                            },
-                          ]}
+                          style={{
+                            borderLeftWidth: 2,
+                            borderLeftColor: mainColor,
+                          }}
                         >
-                          <View style={styles.travelIcon}>
-                            <FontAwesome5
-                              name={
-                                step.travelMode === "TRANSIT"
-                                  ? "bus"
-                                  : "walking"
-                              }
-                              size={24}
-                              color="white"
-                            />
-                          </View>
-                          <View>
-                            <Text
-                              style={{
-                                fontSize: 16,
-                                fontWeight: "bold",
-                                color: "black",
-                              }}
-                            >
-                              {step.travelMode === "TRANSIT"
-                                ? "Public Transport"
-                                : "Walking"}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                marginTop: 4,
-                              }}
-                            >
-                              {convertSecondIntoMinute(
-                                parseInt(step.totalTime)
-                              )}
-                            </Text>
+                          <View style={styles.routeCircle}></View>
+                          <View
+                            key={stepIndex}
+                            style={[
+                              styles.routeInfoContainer,
+                              {
+                                backgroundColor:
+                                  selectedRoute == index ? "#AFCAF7" : "white",
+                              },
+                            ]}
+                          >
+                            <View style={styles.travelIcon}>
+                              <FontAwesome5
+                                name={
+                                  step.travelMode === "TRANSIT"
+                                    ? "bus"
+                                    : "walking"
+                                }
+                                size={24}
+                                color="white"
+                              />
+                            </View>
+                            <View>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: "bold",
+                                  color: "black",
+                                }}
+                              >
+                                {step.travelMode === "TRANSIT"
+                                  ? "Public Transport"
+                                  : "Walking"}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  marginTop: 4,
+                                }}
+                              >
+                                {convertSecondIntoMinute(
+                                  parseInt(step.totalTime)
+                                )}
+                              </Text>
+                            </View>
                           </View>
                         </View>
-                      </View>
-                    ))}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </>
-          )}
+                      ))}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
 
           {loadingRoutes && (
             <View style={styles.loaderContainer}>

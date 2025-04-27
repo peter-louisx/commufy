@@ -1,6 +1,6 @@
 import { mainColor } from "@/constants/Colors";
 import { FontAwesome5 } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,22 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/components/context/AuthContext";
 
 export default function Landing() {
   const router = useRouter();
 
+  const { session } = useAuth();
+
   const handleGetStarted = () => {
     router.push("/login");
   };
+
+  useEffect(() => {
+    if (session) {
+      router.push("(tabs)" as any);
+    }
+  }, [session]);
 
   return (
     <ImageBackground
