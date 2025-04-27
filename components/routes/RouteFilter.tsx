@@ -8,6 +8,7 @@ import { LatLng } from "react-native-maps";
 import { mainColor } from "@/constants/Colors";
 import { getCurrentLocation } from "@/utils/location";
 import { showErrorToast } from "@/utils/toast";
+import { convertDateToString, convertTimeToString } from "@/utils/time";
 
 export type RouteFilterProps = {
   start: LatLng;
@@ -18,21 +19,10 @@ export type RouteFilterProps = {
   time: string;
 };
 
-const convertDateToString = (date: Date) => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const convertTimeToString = (time: Date) => {
-  const hours = time.getHours().toString().padStart(2, "0");
-  const minutes = time.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}:00`;
-};
-
 export default function RouteFilter({
   fetchRoutes,
+  filters,
+  setFilters,
 }: {
   fetchRoutes: (filters: {
     origin: LatLng;
@@ -40,17 +30,19 @@ export default function RouteFilter({
     date: string;
     time: string;
   }) => void;
+  filters: RouteFilterProps;
+  setFilters: React.Dispatch<React.SetStateAction<RouteFilterProps>>;
 }) {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
-  const [filters, setFilters] = useState<RouteFilterProps>({
-    start: { latitude: 0, longitude: 0 },
-    end: { latitude: 0, longitude: 0 },
-    startLocationName: "",
-    endLocationName: "",
-    date: convertDateToString(new Date()),
-    time: convertTimeToString(new Date()),
-  });
+  // const [filters, setFilters] = useState<RouteFilterProps>({
+  //   start: { latitude: 0, longitude: 0 },
+  //   end: { latitude: 0, longitude: 0 },
+  //   startLocationName: "",
+  //   endLocationName: "",
+  //   date: convertDateToString(new Date()),
+  //   time: convertTimeToString(new Date()),
+  // });
 
   useEffect(() => {
     getCurrentLocation()
@@ -96,12 +88,14 @@ export default function RouteFilter({
             }
             fetchDetails={true}
             disableScroll={true}
-            onPress={(data, details: any) => {
+            onPress={(data, details) => {
               setFilters((prev) => ({
                 ...prev,
                 start: {
-                  latitude: details?.geometry.location.lat,
-                  longitude: details?.geometry.location.lng,
+                  latitude:
+                    details?.geometry.location.lat || prev.start.latitude,
+                  longitude:
+                    details?.geometry.location.lng || prev.start.longitude,
                 },
                 startLocationName: data.description,
               }));
@@ -151,12 +145,13 @@ export default function RouteFilter({
             placeholder="Search your departure point"
             fetchDetails={true}
             disableScroll={true}
-            onPress={(data, details: any) => {
+            onPress={(data, details) => {
               setFilters((prev) => ({
                 ...prev,
                 end: {
-                  latitude: details?.geometry.location.lat,
-                  longitude: details?.geometry.location.lng,
+                  latitude: details?.geometry.location.lat || prev.end.latitude,
+                  longitude:
+                    details?.geometry.location.lng || prev.end.longitude,
                 },
                 endLocationName: data.description,
               }));

@@ -92,7 +92,7 @@ export type Route = {
       text: string;
     };
     transitFare: {
-      text: string;
+      text?: string;
     };
   };
 };
