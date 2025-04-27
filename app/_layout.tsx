@@ -50,6 +50,18 @@ export default function RootLayout() {
               headerShown: false,
             }}
           />
+          <Stack.Screen
+            name="login-form"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="sign-up"
+            options={{
+              headerShown: false,
+            }}
+          />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen

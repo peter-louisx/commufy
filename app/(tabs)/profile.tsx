@@ -16,10 +16,12 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/components/context/AuthContext";
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { signOut } = useAuth();
 
   const navigation = useNavigation();
   useLayoutEffect(() => {
@@ -82,10 +84,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <View style={styles.separator} />
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => console.log("Logging out...")}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={() => signOut()}>
           <MaterialIcons name="logout" size={20} color="#E63946" />
           <Text style={[styles.menuText, { color: "#E63946" }]}>Logout</Text>
         </TouchableOpacity>

@@ -7,7 +7,15 @@ import { useRouter } from "expo-router";
 const LoginScreen = () => {
   const router = useRouter();
 
-  const handleGoogleLogin = () => {
+  const signIn = () => {
+    router.push("/login-form" as any);
+  };
+
+  const signUp = () => {
+    router.push("/sign-up" as any);
+  };
+
+  const skipLogin = () => {
     router.push("(tabs)" as any);
   };
 
@@ -25,8 +33,7 @@ const LoginScreen = () => {
         <Text style={styles.subtitle}>
           Hassle-free mobility, just one step away.
         </Text>
-
-        <TouchableOpacity style={styles.button} onPress={handleGoogleLogin}>
+        {/* <TouchableOpacity style={styles.button}>
           <FontAwesome name="google" size={20} />
           <Text style={styles.buttonText}>Continue with Google</Text>
         </TouchableOpacity>
@@ -35,10 +42,17 @@ const LoginScreen = () => {
           <FontAwesome name="apple" size={20} />
           <Text style={styles.buttonText}>Continue with Apple</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button}>
-          <FontAwesome name="phone" size={20} />
-          <Text style={styles.buttonText}>Continue with Phone</Text>
+        */}
+        <TouchableOpacity style={styles.button} onPress={signIn}>
+          <FontAwesome name="sign-in" size={20} />
+          <Text style={styles.buttonText}>Sign in</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={signUp}>
+          <FontAwesome name="arrow-right" size={20} />
+          <Text style={styles.buttonText}>Sign up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={skipLogin}>
+          <Text style={styles.buttonText}>Continue Without Login</Text>
         </TouchableOpacity>
       </View>
     </View>

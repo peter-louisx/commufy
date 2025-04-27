@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { createClient, SupabaseClient, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "expo-router";
 
 interface AuthContextProps {
   session: Session | null;
@@ -14,9 +15,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Session from getSession:", session);
       setSession(session);
     });
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -36,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    router.push("/login-form" as any);
   };
 
   return (
