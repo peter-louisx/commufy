@@ -1,11 +1,16 @@
-import { Image, StyleSheet, Platform, Pressable } from "react-native";
-
+import {
+  Image,
+  StyleSheet,
+  Pressable,
+  View,
+  Text,
+  FlatList,
+} from "react-native";
+import "react-native-get-random-values";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link, router } from "expo-router";
-import "react-native-get-random-values";
 import { useEffect, useState } from "react";
 import { GoogleAPI } from "@/api/google";
 import { getCurrentLocation } from "@/utils/location";
@@ -40,9 +45,19 @@ type WeatherInfo = {
   thunderstormProbability: number;
 };
 
+const cities = [
+  { name: "Use Current Location", latitude: null, longitude: null },
+  { name: "Jakarta", latitude: -6.2, longitude: 106.816666 },
+  { name: "Bandung", latitude: -6.914744, longitude: 107.60981 },
+  { name: "Surabaya", latitude: -7.257472, longitude: 112.75209 },
+  { name: "Yogyakarta", latitude: -7.797068, longitude: 110.370529 },
+];
+
 export default function HomeScreen() {
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo[]>([]);
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const [isCityListOpen, setIsCityListOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -53,36 +68,44 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    const updateWeatherInterval = setInterval(() => {
-      getCurrentLocation()
-        .then((locationData) => {
-          const { latitude, longitude } = locationData.location.coords;
-          GoogleAPI.getWeatherDetails(latitude, longitude).then((response) => {
+    const updateWeather = () => {
+      if (selectedCity.latitude !== null && selectedCity.longitude !== null) {
+        GoogleAPI.getWeatherDetails(
+          selectedCity.latitude,
+          selectedCity.longitude
+        )
+          .then((response) => {
             setWeatherInfo(response.data.forecastHours);
+          })
+          .catch((error) => {
+            showErrorToast(error.message);
           });
-        })
-        .catch((error) => {
-          showErrorToast(error.message);
-        });
-    }, 600000);
+      } else {
+        getCurrentLocation()
+          .then((locationData) => {
+            const { latitude, longitude } = locationData.location.coords;
+            GoogleAPI.getWeatherDetails(latitude, longitude).then(
+              (response) => {
+                setWeatherInfo(response.data.forecastHours);
+              }
+            );
+          })
+          .catch((error) => {
+            showErrorToast(error.message);
+          });
+      }
+    };
 
-    getCurrentLocation()
-      .then((locationData) => {
-        const { latitude, longitude } = locationData.location.coords;
-        GoogleAPI.getWeatherDetails(latitude, longitude).then((response) => {
-          setWeatherInfo(response.data.forecastHours);
-        });
-      })
-      .catch((error) => {
-        showErrorToast(error.message);
-      });
+    const updateWeatherInterval = setInterval(updateWeather, 600000);
+
+    updateWeather(); // initial fetch
 
     return () => clearInterval(updateWeatherInterval);
-  }, []);
+  }, [selectedCity]);
 
   const filteredWeatherInfo = weatherInfo.filter((info) => {
     const currentTimeDate = new Date();
-    const oneHourLater = new Date(currentTimeDate.getTime() + 60 * 60 * 1000); //Perkiraan cuaca untuk satu jam ke depan, yang relevan selama perkiraan waktu perjalanan dari keberangkatan hingga tujuan.
+    const oneHourLater = new Date(currentTimeDate.getTime() + 60 * 60 * 1000);
     const startTime = new Date(info.interval.startTime);
     const endTime = new Date(info.interval.endTime);
 
@@ -92,6 +115,11 @@ export default function HomeScreen() {
       currentTimeDate >= startTime
     );
   });
+
+  const handleCitySelect = (city: (typeof cities)[number]) => {
+    setSelectedCity(city);
+    setIsCityListOpen(false);
+  };
 
   return (
     <ParallaxScrollView
@@ -110,6 +138,31 @@ export default function HomeScreen() {
 
       <ThemedText type="subtitle">Current Time: {currentTime}</ThemedText>
 
+      {/* Manual Dropdown */}
+      <View style={styles.dropdownContainer}>
+        <Pressable
+          style={styles.dropdownButton}
+          onPress={() => setIsCityListOpen(!isCityListOpen)}
+        >
+          <Text style={styles.dropdownButtonText}>{selectedCity.name}</Text>
+        </Pressable>
+
+        {isCityListOpen && (
+          <View style={styles.dropdownList}>
+            {cities.map((city, index) => (
+              <Pressable
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => handleCitySelect(city)}
+              >
+                <Text>{city.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Weather Info */}
       {filteredWeatherInfo.length > 0 ? (
         filteredWeatherInfo.map((info, index) => (
           <ThemedView key={index} style={styles.stepContainer}>
@@ -141,5 +194,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: "absolute",
+  },
+  dropdownContainer: {
+    marginVertical: 12,
+    backgroundColor: "#eee",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  dropdownButton: {
+    padding: 12,
+    backgroundColor: "#ddd",
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+  },
+  dropdownList: {
+    backgroundColor: "#f9f9f9",
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
   },
 });
